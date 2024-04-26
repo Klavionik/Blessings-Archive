@@ -185,7 +185,12 @@ local blueprints = {
         init = function (widget, trait)
             widget.content.title = trait.name .. " Tier " .. TextUtilities.convert_to_roman_numerals(trait.rarity)
             widget.content.description = trait.desc
-            widget.content.weapons = "Fits on: " .. table.concat(trait.weapons, ", ")
+
+            if trait.weapons then
+                widget.content.weapons = "Fits on: " .. table.concat(trait.weapons, ", ")
+            else
+                widget.content.weapons = "Fits on: any"
+            end
         end
     }
 }

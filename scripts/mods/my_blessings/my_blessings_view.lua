@@ -164,7 +164,7 @@ MyBlessingsView._update_traits = function(self, categories)
                     local name = ItemUtils.display_name(trait)
 
                     local weapon_restriction = trait.weapon_type_restriction[1]
-                    local fit_weapons = weapons[weapon_restriction]
+                    local fit_weapons = weapons[weapon_restriction] or {}
 
                     local trait_data = {
                         trait_id = trait.name,
