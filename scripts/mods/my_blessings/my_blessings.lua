@@ -5,7 +5,7 @@ local WwiseGameSyncSettings = require("scripts/settings/wwise_game_sync/wwise_ga
 
 mod:add_require_path("my_blessings/scripts/mods/my_blessings/my_blessings_view")
 
-local view_registered_correctly = mod:register_view({
+mod:register_view({
 	view_name = "my_blessings_view",
 	view_settings = {
 		init_view_function = function(ingame_ui_context)
@@ -38,16 +38,3 @@ local view_registered_correctly = mod:register_view({
 		transition_time = nil,
 	},
 })
-
-
-mod:command("debug_scenegraph", "", function()
-    mod.debugging = not mod.debugging
-end)
-
-local UIRenderer = mod:original_require("scripts/managers/ui/ui_renderer")
-
-mod:hook_safe(UIRenderer, "begin_pass", function(self, ui_scenegraph, input_service, dt, render_settings)
-    if mod.debugging then
-        UIRenderer.debug_render_scenegraph(self, ui_scenegraph)
-    end
-end)

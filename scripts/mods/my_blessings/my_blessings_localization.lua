@@ -16,7 +16,16 @@ return {
 	mod_description = {
 		en = "Displays all blessings that you have earned",
 	},
-	enable_debug_mode = {
-        en = "Enable Debug Mode",
+	debug_mode = {
+        en = "Debug Mode",
     },
+	fits_any_weapon = {
+		en = "Fits on: any"
+	},
+	fits_weapon = {
+		en = "Fits on:"
+	},
+	tier = {
+		en = "Tier"
+	}
 }

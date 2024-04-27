@@ -14,7 +14,7 @@ return {
 				view_name = "my_blessings_view"
 			},
 			{
-                setting_id = "enable_debug_mode",
+                setting_id = "debug_mode",
                 type = "checkbox",
                 default_value = false,
             }

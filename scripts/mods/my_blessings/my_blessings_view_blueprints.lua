@@ -1,3 +1,4 @@
+local mod = get_mod("my_blessings")
 local TextUtilities = require("scripts/utilities/ui/text")
 
 local blueprints = {
@@ -117,7 +118,7 @@ local blueprints = {
                     offset = {
                         10,
                         10,
-                        0
+                        1
                     },
                 }
             },
@@ -127,7 +128,7 @@ local blueprints = {
                 style_id = "description",
                 value = "n/a",
                 style = {
-                    font_size = 20,
+                    font_size = 19,
                     text_vertical_alignment = "top",
                     horizontal_alignment = "left",
                     text_horizontal_alignment = "left",
@@ -141,13 +142,7 @@ local blueprints = {
                     offset = {
                         10,
                         40,
-                        5
-                    },
-                    color = {
-                        100,
-                        100,
-                        255,
-                        0
+                        1
                     },
                 },
             },
@@ -163,7 +158,7 @@ local blueprints = {
                     text_horizontal_alignment = "left",
                     vertical_alignment = "top",
                     font_type = "proxima_nova_bold",
-                    text_color = Color.terminal_text_header(255, true),
+                    text_color = Color.ui_terminal(255, true),
                     size = {
                         330,
                         0
@@ -171,25 +166,21 @@ local blueprints = {
                     offset = {
                         10,
                         0,
-                        5
-                    },
-                    color = {
-                        100,
-                        100,
-                        255,
-                        0
+                        1
                     },
                 },
             }
         },
-        init = function (widget, trait)
-            widget.content.title = trait.name .. " Tier " .. TextUtilities.convert_to_roman_numerals(trait.rarity)
+        init = function (ui_renderer, widget, trait)
+            local tier_localized = " " .. mod:localize("tier") .. " "
+            widget.content.title = trait.name .. tier_localized .. TextUtilities.convert_to_roman_numerals(trait.rarity)
             widget.content.description = trait.desc
+            local fits_on_localized = mod:localize("fits_weapon")
 
-            if trait.weapons then
-                widget.content.weapons = "Fits on: " .. table.concat(trait.weapons, ", ")
+            if trait.weapons and #trait.weapons > 0 then
+                widget.content.weapons = fits_on_localized .. " " .. table.concat(trait.weapons, ", ")
             else
-                widget.content.weapons = "Fits on: any"
+                widget.content.weapons = mod:localize("fits_any_weapon")
             end
         end
     }

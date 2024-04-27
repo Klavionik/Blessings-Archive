@@ -6,10 +6,10 @@ local ItemUtils = require("scripts/utilities/items")
 local MasterItems = require("scripts/backend/master_items")
 local ScriptWorld = require("scripts/foundation/utilities/script_world")
 local ViewElementInputLegend = require("scripts/ui/view_elements/view_element_input_legend/view_element_input_legend")
-local UIWidget = mod:original_require("scripts/managers/ui/ui_widget")
-local UIRenderer = mod:original_require("scripts/managers/ui/ui_renderer")
+local UIWidget = require("scripts/managers/ui/ui_widget")
+local UIRenderer = require("scripts/managers/ui/ui_renderer")
 local UIFonts = require("scripts/managers/ui/ui_fonts")
-local UIWidgetGrid = mod:original_require("scripts/ui/widget_logic/ui_widget_grid")
+local UIWidgetGrid = require("scripts/ui/widget_logic/ui_widget_grid")
 
 local definitions = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_definitions")
 local blueprints = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_blueprints")
@@ -59,11 +59,12 @@ MyBlessingsView = class("MyBlessingsView", "BaseView")
 
 MyBlessingsView.init = function(self, settings)
 	self._settings = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_settings")
-    self._traits = {}
-    self._blessing_widgets = {}
-    self._blessing_grid = {}
+    self._traits = nil
+    self._blessing_widgets = nil
+    self._blessing_grid = nil
     self._ready = false
-    self._content_scenegraph_id = "content_pivot"
+    self._content_scenegraph_id = "canvas"
+    self._grid_scenegraph_id = "grid"
 	MyBlessingsView.super.init(self, definitions, settings)
 end
 
@@ -71,6 +72,7 @@ MyBlessingsView.on_enter = function(self)
 	MyBlessingsView.super.on_enter(self)
 
 	self:_setup_input_legend()
+    self:_create_offscreen_renderer()
     self:_update_traits(TRAIT_CATEGORIES)
 end
 
@@ -104,7 +106,7 @@ local get_weapons = function ()
             local name = Localize(item.display_name):match("^%s*(.-)%s*$")
 
             if name == "++ PERDITUM SANCTUS ++" then
-                mod:debug("Excluded weapon %s, display name %s", item.name, item.display_name) 
+                mod:debug("Excluded weapon %s, display name %s", item.name, item.display_name)
                 goto continue
             end
 
@@ -222,8 +224,8 @@ MyBlessingsView._on_back_pressed = function(self)
 end
 
 MyBlessingsView._destroy_renderer = function(self)
-	if self._offscreen_renderer then
-		self._offscreen_renderer = nil
+	if self._offscreen_ui_renderer then
+		self._offscreen_ui_renderer = nil
 	end
 
 	local world_data = self._offscreen_world
@@ -238,20 +240,22 @@ MyBlessingsView._destroy_renderer = function(self)
 end
 
 MyBlessingsView.update = function(self, dt, t, input_service)
+    if self._blessing_grid then
+        self._blessing_grid:update(dt, t, input_service)
+    end
 	return MyBlessingsView.super.update(self, dt, t, input_service)
 end
 
 MyBlessingsView._create_blessing_widgets = function(self)
 	local blueprint = blueprints.blessing
 	local widgets = {}
-	local definition = UIWidget.create_definition(blueprint.pass_template, self._content_scenegraph_id, nil, blueprint.size)
+	local definition = UIWidget.create_definition(blueprint.pass_template, self._grid_scenegraph_id, nil, blueprint.size)
 
 	for i = 1, #self._traits do
 		local trait = self._traits[i]
 		local widget = UIWidget.init("blessing_" .. i, definition)
-		blueprint.init(widget, trait)
+		blueprint.init(self._offscreen_ui_renderer, widget, trait)
 		local style = widget.style
-		local y_offset = 10
 
 		local title_height = self:_get_text_height(widget.content.title, style.title)
 		local description_height = self:_get_text_height(widget.content.description, style.description)
@@ -259,7 +263,7 @@ MyBlessingsView._create_blessing_widgets = function(self)
 
 		style.title.size[2] = title_height
 		style.description.size[2] = description_height
-		style.weapons.offset[2] = y_offset + title_height + description_height + 50
+		style.weapons.offset[2] = title_height + description_height + 45
 		style.weapons.size[2] = weapons_height
 
 		widgets[#widgets + 1] = widget
@@ -268,13 +272,33 @@ MyBlessingsView._create_blessing_widgets = function(self)
 	self._blessing_widgets = widgets
 end
 
-
 MyBlessingsView._get_text_height = function(self, text, text_style, optional_text_size)
-	local ui_renderer = self._ui_renderer
+	local ui_renderer = self._offscreen_ui_renderer
 	local text_options = UIFonts.get_font_options_by_style(text_style)
 	local text_height = UIRenderer.text_height(ui_renderer, text, text_style.font_type, text_style.font_size, optional_text_size or text_style.size, text_options)
 
 	return text_height
+end
+
+MyBlessingsView._create_offscreen_renderer = function(self)
+	local view_name = self.view_name
+	local world_layer = 10
+	local world_name = self.__class_name .. "_ui_offscreen_world"
+	local world = Managers.ui:create_world(world_name, world_layer, nil, view_name)
+	local viewport_name = "offscreen_viewport"
+	local viewport_type = "overlay_offscreen"
+	local viewport_layer = 1
+	local viewport = Managers.ui:create_viewport(world, viewport_name, viewport_type, viewport_layer)
+	local renderer_name = self.__class_name .. "offscreen_renderer"
+
+	self._offscreen_ui_renderer = Managers.ui:create_renderer(renderer_name, world)
+	self._offscreen_world = {
+		name = world_name,
+		world = world,
+		viewport = viewport,
+		viewport_name = viewport_name,
+		renderer_name = renderer_name
+	}
 end
 
 
@@ -296,7 +320,7 @@ MyBlessingsView._create_grid = function (self)
 
     local scrollbar_widget = self._widgets_by_name["scrollbar"]
 	scrollbar_widget.content.scroll_speed = 100
-    grid:assign_scrollbar(scrollbar_widget, self._content_scenegraph_id, self._content_scenegraph_id)
+    grid:assign_scrollbar(scrollbar_widget, self._grid_scenegraph_id, self._content_scenegraph_id)
     grid:set_scrollbar_progress(0)
 
     self._blessing_grid = grid
@@ -304,7 +328,7 @@ end
 
 MyBlessingsView._draw_blessings = function(self, dt, input_service)
     local render_settings = self._render_settings
-    local ui_renderer = self._ui_renderer
+    local ui_renderer = self._offscreen_ui_renderer
     local ui_scenegraph = self._ui_scenegraph
 
     UIRenderer.begin_pass(ui_renderer, ui_scenegraph, input_service, dt, render_settings)

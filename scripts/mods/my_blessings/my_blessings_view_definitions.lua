@@ -3,10 +3,41 @@ local settings = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessi
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 local UIWorkspaceSettings = require("scripts/settings/ui/ui_workspace_settings")
-local ScrollbarPassTemplates = mod:original_require("scripts/ui/pass_templates/scrollbar_pass_templates")
+local ScrollbarPassTemplates = require("scripts/ui/pass_templates/scrollbar_pass_templates")
 
 local scenegraph_definition = {
 	screen = UIWorkspaceSettings.screen,
+    canvas = {
+        vertical_alignment = "top",
+        parent = "screen",
+        horizontal_alignment = "left",
+        size = settings.grid_size,
+        position = {180, 180, 1}
+    },
+    grid = {
+        vertical_alignment = "top",
+        parent = "canvas",
+        horizontal_alignment = "left",
+        size = {0, 0},
+        position = {0, 0, 1}
+    },
+    grid_mask = {
+        vertical_alignment = "center",
+        parent = "canvas",
+        horizontal_alignment = "center",
+        size = {
+            settings.grid_width + settings.grid_blur_edge_size[1] * 2,
+            settings.grid_height + settings.grid_blur_edge_size[2] * 2,
+        },
+        position = {0, 0, 0}
+    },
+    scrollbar = {
+        vertical_alignment = "center",
+        parent = "canvas",
+        horizontal_alignment = "right",
+        size = {settings.scrollbar_width, settings.grid_height},
+        position = {-150, 0, 1}
+    },
     title_divider = {
         vertical_alignment = "top",
         parent = "screen",
@@ -21,23 +52,27 @@ local scenegraph_definition = {
         size = {500, 50},
         position = {0, -35, 1}
     },
-    content_pivot = {
-        vertical_alignment = "top",
-        parent = "title_divider",
-        horizontal_alignment = "left",
-        size = settings.grid_size,
-        position = {0, 30, 1}
-    },
-    scrollbar = {
-        vertical_alignment = "center",
-        parent = "content_pivot",
-        horizontal_alignment = "right",
-        size = {settings.scrollbar_width, settings.grid_size[2]},
-        position = {-150, 0, 1}
-    },
 }
 
 local widget_definitions = {
+    settings_overlay = UIWidget.create_definition({
+        {
+            pass_type = "rect",
+            style = {
+                offset = {0, 0, 0},
+                color = {160, 0, 0, 0},
+                visible = false,
+            }
+        }
+    }, "screen"),
+    background = UIWidget.create_definition({
+        {
+            pass_type = "rect",
+            style = {
+                color = {160, 0, 0, 0}
+            }
+        }
+    }, "screen"),
     title_divider = UIWidget.create_definition({
         {
             pass_type = "texture",
@@ -53,7 +88,16 @@ local widget_definitions = {
             style = table.clone(UIFontSettings.header_1)
         }
     }, "title_text"),
-    scrollbar = UIWidget.create_definition(ScrollbarPassTemplates.default_scrollbar, "scrollbar"),
+    grid_mask = UIWidget.create_definition({
+        {
+            value = "content/ui/materials/offscreen_masks/ui_overlay_offscreen_vertical_blur",
+            pass_type = "texture",
+            style = {
+                color = {255, 255, 255, 255}
+            }
+        }
+    }, "grid_mask"),
+    scrollbar = UIWidget.create_definition(ScrollbarPassTemplates.default_scrollbar, "scrollbar")
 }
 
 local legend_inputs = {
