@@ -5,7 +5,7 @@ local blueprints = {
     blessing = {
         size = {
             350,
-            200,
+            190,
         },
         pass_template = {
             {
@@ -128,7 +128,7 @@ local blueprints = {
                 style_id = "description",
                 value = "n/a",
                 style = {
-                    font_size = 19,
+                    font_size = 18,
                     text_vertical_alignment = "top",
                     horizontal_alignment = "left",
                     text_horizontal_alignment = "left",
@@ -172,8 +172,7 @@ local blueprints = {
             }
         },
         init = function (ui_renderer, widget, trait)
-            local tier_localized = " " .. mod:localize("tier") .. " "
-            widget.content.title = trait.name .. tier_localized .. TextUtilities.convert_to_roman_numerals(trait.rarity)
+            widget.content.title = trait.name .. " " .. TextUtilities.convert_to_roman_numerals(trait.rarity)
             widget.content.description = trait.desc
             local fits_on_localized = mod:localize("fits_weapon")
 

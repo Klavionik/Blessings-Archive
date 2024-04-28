@@ -1,31 +1,28 @@
 local mod = get_mod("my_blessings")
 
-mod:add_global_localize_strings({
-	my_blessings_display_name = {
-		en = "My Blessings",
-	}
-})
-
 return {
 	mod_title = {
 		en = "My Blessings",
+		ru = "Мои благословения"
 	},
 	open_my_blessings = {
-		en = "Open My Blessings"
+		en = "Open My Blessings",
+		ru = "Открыть мои благословения"
 	},
 	mod_description = {
 		en = "Displays all blessings that you have earned",
+		ru = "Показывает все имеющиеся благословения"
 	},
 	debug_mode = {
         en = "Debug Mode",
+		ru = "Режим отладки"
     },
 	fits_any_weapon = {
-		en = "Fits on: any"
+		en = "Fits on any weapon",
+		ru = "Подходит к любому оружию"
 	},
 	fits_weapon = {
-		en = "Fits on:"
+		en = "Fits on:",
+		ru = "Подходит к:"
 	},
-	tier = {
-		en = "Tier"
-	}
 }

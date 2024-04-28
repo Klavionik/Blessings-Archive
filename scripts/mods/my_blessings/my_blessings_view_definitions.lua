@@ -84,7 +84,7 @@ local widget_definitions = {
             value_id = "text",
             style_id = "text",
             pass_type = "text",
-            value = "My Blessings",
+            value = mod:localize("mod_title"),
             style = table.clone(UIFontSettings.header_1)
         }
     }, "title_text"),

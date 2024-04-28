@@ -101,26 +101,18 @@ local get_weapons = function ()
 
     for _, item in pairs(items) do
         local is_weapon = item.item_type == "WEAPON_RANGED" or item.item_type == "WEAPON_MELEE"
+        local name = item.display_name
+        local bot_weapon = string.match(name, "npc") or string.match(name, "bot")
 
-        if is_weapon then
-            local name = Localize(item.display_name):match("^%s*(.-)%s*$")
-
-            if name == "++ PERDITUM SANCTUS ++" then
-                mod:debug("Excluded weapon %s, display name %s", item.name, item.display_name)
-                goto continue
-            end
-
-            if name == "<unlocalized \"\": string not found>" then
-                mod:debug("Cannot localize weapon %s, display name %s", item.name, item.display_name)
-                goto continue
-            end
+        if is_weapon and not bot_weapon and name ~= "" then
+            local localized_name = Localize(name):match("^%s*(.-)%s*$") --Strip possible whitespaces.
 
             if weapons[item.parent_pattern] ~= nil then
                 local i = #weapons[item.parent_pattern] + 1
-                weapons[item.parent_pattern][i] = name
+                weapons[item.parent_pattern][i] = localized_name
             else
                 weapons[item.parent_pattern] = {}
-                weapons[item.parent_pattern][1] = name
+                weapons[item.parent_pattern][1] = localized_name
             end
         end
 
