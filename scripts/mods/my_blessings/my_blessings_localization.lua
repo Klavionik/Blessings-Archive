@@ -1,5 +1,28 @@
 local mod = get_mod("my_blessings")
 
+mod:add_global_localize_strings({
+	cycle_tier = {
+		en = "Tier: any",
+		ru = "Уровень: любой"
+	},
+	tier_1 = {
+		en = "Tier: I",
+		ru = "Уровень: I"
+	},
+	tier_2 = {
+		en = "Tier: II",
+		ru = "Уровень: II"
+	},
+	tier_3 = {
+		en = "Tier: III",
+		ru = "Уровень: III"
+	},
+	tier_4 = {
+		en = "Tier: IV",
+		ru = "Уровень: IV"
+	}
+})
+
 return {
 	mod_title = {
 		en = "My Blessings",

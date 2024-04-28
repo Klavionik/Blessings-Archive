@@ -55,6 +55,19 @@ local TRAIT_CATEGORIES = {
     "bespoke_thunderhammer_2h_p1",
 }
 
+local function cycle(elements)
+    local len = #elements
+    local i = 1
+    return function()
+        while true do
+          if i > len then i = 1 end
+          local next_el = elements[i]
+          i = i + 1
+          return next_el
+      end
+  end
+end
+
 MyBlessingsView = class("MyBlessingsView", "BaseView")
 
 MyBlessingsView.init = function(self, settings)
@@ -65,6 +78,10 @@ MyBlessingsView.init = function(self, settings)
     self._ready = false
     self._content_scenegraph_id = "canvas"
     self._grid_scenegraph_id = "grid"
+
+    self._tier_cycle = cycle({nil, 1, 2, 3, 4})
+    self._selected_tier = self._tier_cycle()
+    self._tier_legend_entry_id = nil
 	MyBlessingsView.super.init(self, definitions, settings)
 end
 
@@ -85,13 +102,17 @@ MyBlessingsView._setup_input_legend = function(self)
 		local on_pressed_callback = legend_input.on_pressed_callback
 			and callback(self, legend_input.on_pressed_callback)
 
-		self._input_legend_element:add_entry(
+		local entry_id = self._input_legend_element:add_entry(
 			legend_input.display_name,
 			legend_input.input_action,
 			legend_input.visibility_function,
 			on_pressed_callback,
 			legend_input.alignment
 		)
+
+        if legend_input.display_name == "cycle_tier" then
+            self._tier_legend_entry_id = entry_id
+        end
 	end
 end
 
@@ -115,8 +136,6 @@ local get_weapons = function ()
                 weapons[item.parent_pattern][1] = localized_name
             end
         end
-
-        ::continue::
     end
 
     if debug_mode then
@@ -124,6 +143,19 @@ local get_weapons = function ()
     end
 
     return weapons
+end
+
+MyBlessingsView._on_space_pressed = function (self)
+    self._selected_tier = self._tier_cycle()
+    -- This probably can be done in a more efficient manner.
+    self:_create_blessing_widgets()
+    self:_create_grid()
+
+    if self._selected_tier then
+        self._input_legend_element:set_display_name(self._tier_legend_entry_id, "tier_" .. self._selected_tier)
+    else
+        self._input_legend_element:set_display_name(self._tier_legend_entry_id, "cycle_tier")
+    end
 end
 
 MyBlessingsView._update_traits = function(self, categories)
@@ -245,6 +277,11 @@ MyBlessingsView._create_blessing_widgets = function(self)
 
 	for i = 1, #self._traits do
 		local trait = self._traits[i]
+
+        if self._selected_tier and self._selected_tier ~= trait.rarity then
+            goto continue
+        end
+
 		local widget = UIWidget.init("blessing_" .. i, definition)
 		blueprint.init(self._offscreen_ui_renderer, widget, trait)
 		local style = widget.style
@@ -259,6 +296,8 @@ MyBlessingsView._create_blessing_widgets = function(self)
 		style.weapons.size[2] = weapons_height
 
 		widgets[#widgets + 1] = widget
+
+        ::continue::
 	end
 
 	self._blessing_widgets = widgets
@@ -296,11 +335,10 @@ end
 
 MyBlessingsView._create_grid = function (self)
     local grid_spacing = {20, 30}
-    local alignments = self._blessing_widgets
     local direction = "down"
     local grid = UIWidgetGrid:new(
 		self._blessing_widgets,
-		alignments,
+		self._blessing_widgets,
 		self._ui_scenegraph,
 		self._content_scenegraph_id,
 		direction,

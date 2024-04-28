@@ -174,6 +174,7 @@ local blueprints = {
         init = function (ui_renderer, widget, trait)
             widget.content.title = trait.name .. " " .. TextUtilities.convert_to_roman_numerals(trait.rarity)
             widget.content.description = trait.desc
+            widget._trait_rarity = trait.rarity
             local fits_on_localized = mod:localize("fits_weapon")
 
             if trait.weapons and #trait.weapons > 0 then

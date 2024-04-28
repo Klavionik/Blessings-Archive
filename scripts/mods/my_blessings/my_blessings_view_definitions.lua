@@ -107,6 +107,12 @@ local legend_inputs = {
 		display_name = "loc_class_selection_button_back",
 		alignment = "left_alignment",
 	},
+    {
+		input_action = "next",
+		on_pressed_callback = "_on_space_pressed",
+		display_name = "cycle_tier",
+		alignment = "left_alignment",
+	},
 }
 
 return {
