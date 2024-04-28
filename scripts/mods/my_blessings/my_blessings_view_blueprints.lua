@@ -1,11 +1,21 @@
 local mod = get_mod("my_blessings")
 local TextUtilities = require("scripts/utilities/ui/text")
+local UIRenderer = require("scripts/managers/ui/ui_renderer")
+local UIFonts = require("scripts/managers/ui/ui_fonts")
+
+local function get_text_height(ui_renderer, text, text_style, optional_text_size)
+	local text_options = UIFonts.get_font_options_by_style(text_style)
+	local text_height = UIRenderer.text_height(ui_renderer, text, text_style.font_type, text_style.font_size, optional_text_size or text_style.size, text_options)
+
+	return text_height
+end
 
 local blueprints = {
     blessing = {
+        -- Size is calculated dynamically in init method.
         size = {
-            350,
-            190,
+            0,
+            0,
         },
         pass_template = {
             {
@@ -182,6 +192,24 @@ local blueprints = {
             else
                 widget.content.weapons = mod:localize("fits_any_weapon")
             end
+
+            local style = widget.style
+
+            local title_height = get_text_height(ui_renderer, widget.content.title, style.title)
+            local description_height = get_text_height(ui_renderer, widget.content.description, style.description)
+            local weapons_height = get_text_height(ui_renderer, widget.content.weapons, style.weapons)
+
+            local total_offset = 50
+            local bottom_margin = 10
+    
+            style.title.size[2] = title_height
+            style.description.size[2] = description_height
+            style.weapons.offset[2] = title_height + description_height + total_offset
+            style.weapons.size[2] = weapons_height
+
+            local total_height = title_height + description_height + weapons_height + total_offset + bottom_margin
+
+            widget.content.size = {350, total_height}
         end
     }
 }

@@ -274,6 +274,7 @@ MyBlessingsView._create_blessing_widgets = function(self)
 	local blueprint = blueprints.blessing
 	local widgets = {}
 	local definition = UIWidget.create_definition(blueprint.pass_template, self._grid_scenegraph_id, nil, blueprint.size)
+    local max_height = 0
 
 	for i = 1, #self._traits do
 		local trait = self._traits[i]
@@ -284,21 +285,17 @@ MyBlessingsView._create_blessing_widgets = function(self)
 
 		local widget = UIWidget.init("blessing_" .. i, definition)
 		blueprint.init(self._offscreen_ui_renderer, widget, trait)
-		local style = widget.style
 
-		local title_height = self:_get_text_height(widget.content.title, style.title)
-		local description_height = self:_get_text_height(widget.content.description, style.description)
-		local weapons_height = self:_get_text_height(widget.content.weapons, style.weapons)
-
-		style.title.size[2] = title_height
-		style.description.size[2] = description_height
-		style.weapons.offset[2] = title_height + description_height + 45
-		style.weapons.size[2] = weapons_height
+        max_height = math.max(max_height, widget.content.size[2])
 
 		widgets[#widgets + 1] = widget
 
         ::continue::
 	end
+
+    for i = 1, #widgets do
+        widgets[i].content.size[2] = max_height
+    end
 
 	self._blessing_widgets = widgets
 end
