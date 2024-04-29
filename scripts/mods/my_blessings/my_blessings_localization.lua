@@ -20,6 +20,10 @@ mod:add_global_localize_strings({
 	tier_4 = {
 		en = "Tier: IV",
 		ru = "Уровень: IV"
+	},
+	weapon_not_selected = {
+		en = "Any weapon",
+		ru = "Любое оружие"
 	}
 })
 

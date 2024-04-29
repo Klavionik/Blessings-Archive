@@ -48,7 +48,7 @@ local TRAIT_CATEGORIES = {
     "bespoke_ogryn_powermaul_p1",
     "bespoke_plasmagun_p1",
     "bespoke_powermaul_2h_p1",
-    "bespoke_powermaul_p1",
+    -- "bespoke_powermaul_p1",
     "bespoke_powersword_p1",
     "bespoke_shotgun_p1",
     "bespoke_stubrevolver_p1",
@@ -82,7 +82,82 @@ MyBlessingsView.init = function(self, settings)
     self._tier_cycle = cycle({nil, 1, 2, 3, 4})
     self._selected_tier = self._tier_cycle()
     self._tier_legend_entry_id = nil
+
+    self._weapons = {}
+    self._weapon_options = {}
+    self._current_weapon_option_id = nil
+    self._selected_weapon_category = nil
+    self._dropdown = nil
+    self._close_dropdown = false
 	MyBlessingsView.super.init(self, definitions, settings)
+end
+
+local get_weapons = function ()
+    local items = Managers.backend.interfaces.master_data:items_cache():get_cached()
+    local weapons = {}
+
+    for _, item in pairs(items) do
+        local is_weapon = item.item_type == "WEAPON_RANGED" or item.item_type == "WEAPON_MELEE"
+        local name = item.display_name
+        local excluded = string.match(name, "npc") or string.match(name, "bot") or string.match(name, "empty") or name == ""
+
+        if is_weapon and not excluded then
+            local localized_name = Localize(name):match("^%s*(.-)%s*$") --Strip possible whitespaces.
+
+            if weapons[item.parent_pattern] ~= nil then
+                local i = #weapons[item.parent_pattern] + 1
+                weapons[item.parent_pattern][i] = {
+                    name = name,
+                    localized_name = localized_name
+                }
+            else
+                weapons[item.parent_pattern] = {}
+                weapons[item.parent_pattern][1] = {
+                    name = name,
+                    localized_name = localized_name
+                }
+            end
+        end
+    end
+
+    if debug_mode then
+        mod:dump(weapons, "weapons", 3)
+    end
+
+    return weapons
+end
+
+local make_weapons_options = function (weapons)
+    local options = {}
+    local weapon_index = 1
+
+    for category, category_weapons in pairs(weapons) do
+        for _, weapon in pairs(category_weapons) do
+            local option = {
+                ignore_localization = true,
+                display_name = weapon.localized_name,
+                id = "weapon_" .. weapon_index,
+                value = "weapon_" .. weapon.name,
+                weapon_category = category
+            }
+            options[#options + 1] = option
+            weapon_index = weapon_index + 1
+        end
+    end
+
+    --Sort alphabetically.
+    table.sort(options, function (a, b)
+        return a.display_name < b.display_name
+    end)
+
+    -- Add default option.
+    table.insert(options, 1, {display_name = "weapon_not_selected", value = nil, id = "weapon_not_selected", weapon_category = nil})
+
+    if debug_mode then
+        mod:dump(options, "weapon_options", 2)
+    end
+
+    return options
 end
 
 MyBlessingsView.on_enter = function(self)
@@ -90,7 +165,10 @@ MyBlessingsView.on_enter = function(self)
 
 	self:_setup_input_legend()
     self:_create_offscreen_renderer()
+    self._weapons = get_weapons()
+    self._weapon_options = make_weapons_options(self._weapons)
     self:_update_traits(TRAIT_CATEGORIES)
+    self._dropdown = self:_create_weapons_dropdown()
 end
 
 MyBlessingsView._setup_input_legend = function(self)
@@ -116,35 +194,6 @@ MyBlessingsView._setup_input_legend = function(self)
 	end
 end
 
-local get_weapons = function ()
-    local items = Managers.backend.interfaces.master_data:items_cache():get_cached()
-    local weapons = {}
-
-    for _, item in pairs(items) do
-        local is_weapon = item.item_type == "WEAPON_RANGED" or item.item_type == "WEAPON_MELEE"
-        local name = item.display_name
-        local bot_weapon = string.match(name, "npc") or string.match(name, "bot")
-
-        if is_weapon and not bot_weapon and name ~= "" then
-            local localized_name = Localize(name):match("^%s*(.-)%s*$") --Strip possible whitespaces.
-
-            if weapons[item.parent_pattern] ~= nil then
-                local i = #weapons[item.parent_pattern] + 1
-                weapons[item.parent_pattern][i] = localized_name
-            else
-                weapons[item.parent_pattern] = {}
-                weapons[item.parent_pattern][1] = localized_name
-            end
-        end
-    end
-
-    if debug_mode then
-        mod:dump(weapons, "weapons", 3)
-    end
-
-    return weapons
-end
-
 MyBlessingsView._on_space_pressed = function (self)
     self._selected_tier = self._tier_cycle()
     -- This probably can be done in a more efficient manner.
@@ -163,7 +212,6 @@ MyBlessingsView._update_traits = function(self, categories)
 
     local profile = Managers.player:local_player_backend_profile()
     local character_id = profile and profile.character_id
-    local weapons = get_weapons()
 
     local promises = {}
 
@@ -190,7 +238,7 @@ MyBlessingsView._update_traits = function(self, categories)
                     local name = ItemUtils.display_name(trait)
 
                     local weapon_restriction = trait.weapon_type_restriction[1]
-                    local fit_weapons = weapons[weapon_restriction] or {}
+                    local fit_weapons = self._weapons[weapon_restriction] or {}
 
                     local trait_data = {
                         trait_id = trait.name,
@@ -199,7 +247,7 @@ MyBlessingsView._update_traits = function(self, categories)
                         rarity = trait.rarity,
                         weapons = fit_weapons,
                         value = trait.value,
-                        category = ItemUtils.trait_category(trait)
+                        weapon_restriction = weapon_restriction
                     }
                     
                     if debug_mode then
@@ -267,6 +315,11 @@ MyBlessingsView.update = function(self, dt, t, input_service)
     if self._blessing_grid then
         self._blessing_grid:update(dt, t, input_service)
     end
+
+    if self._dropdown then
+        blueprints["dropdown"].update(self, self._dropdown, input_service, dt, t)
+    end
+
 	return MyBlessingsView.super.update(self, dt, t, input_service)
 end
 
@@ -280,6 +333,10 @@ MyBlessingsView._create_blessing_widgets = function(self)
 		local trait = self._traits[i]
 
         if self._selected_tier and self._selected_tier ~= trait.rarity then
+            goto continue
+        end
+
+        if self._selected_weapon_category and self._selected_weapon_category ~= trait.weapon_restriction then
             goto continue
         end
 
@@ -298,6 +355,93 @@ MyBlessingsView._create_blessing_widgets = function(self)
     end
 
 	self._blessing_widgets = widgets
+end
+
+MyBlessingsView._create_weapons_dropdown = function (self)
+    local widget_options = {
+        tooltip_text = "tooptip",
+        widget_type = "dropdown",
+        on_activated = function (option_id, template)
+            self._current_weapon_option_id = option_id
+
+            for i = 1, #self._weapon_options do
+                local option = self._weapon_options[i]
+
+                if option.id == option_id then
+                    self._selected_weapon_category = option.weapon_category
+                end
+            end
+
+            self._close_dropdown = true
+            self:_toggle_dropdown(self._dropdown)
+            self:_create_blessing_widgets()
+            self:_create_grid()
+        end,
+        on_changed = function (value)
+            self._current_weapon_option_id = value
+        end,
+        validation_function = function (...)
+            mod:warning("validation")
+        end,
+        get_function = function (template)
+            for i = 1, #self._weapon_options do
+                local option = self._weapon_options[i]
+
+                if option.id == self._current_weapon_option_id then
+                    return option.id
+                end
+            end
+
+            return "weapon_not_selected"
+        end,
+        options_function = function (...)
+            return self._weapon_options
+        end,
+        display_name = "",
+        id = "wtf"
+    }
+    local callback_name = "cb_on_weapons_filter_pressed"
+    local scenegraph_id = "weapons_filter"
+    local widget_type = "dropdown"
+    local widget = nil
+    local template = blueprints[widget_type]
+    local size = template.size
+    local pass_template_function = template.pass_template_function
+    local pass_template = pass_template_function and pass_template_function(widget_options) or template.pass_template
+    local widget_definition = pass_template and UIWidget.create_definition(pass_template, scenegraph_id, nil, size)
+
+    local name = "weapons_filter"
+    widget = self:_create_widget(name, widget_definition)
+    widget.type = widget_type
+    local init = template.init
+
+    if init then
+        init(self, widget, widget_options, callback_name)
+    end
+
+    return widget
+end
+
+MyBlessingsView.cb_on_weapons_filter_pressed = function (self, widget, entry)
+	local pressed_function = entry.pressed_function
+
+    self:_toggle_dropdown(widget)
+
+	if pressed_function then
+		pressed_function(self, widget, entry)
+	end
+end
+
+
+MyBlessingsView._toggle_dropdown = function (self, widget)
+    widget.content.exclusive_focus = not self._close_dropdown
+	local hotspot = widget.content.hotspot or widget.content.button_hotspot
+
+    if hotspot then
+        hotspot.is_selected = not self._close_dropdown
+    end
+
+    self._close_dropdown = not self._close_dropdown
 end
 
 MyBlessingsView._get_text_height = function(self, text, text_style, optional_text_size)
@@ -373,6 +517,10 @@ end
 
 MyBlessingsView.draw = function(self, dt, t, input_service, layer)
 	self:_draw_elements(dt, t, self._ui_renderer, self._render_settings, input_service)
+
+    UIRenderer.begin_pass(self._ui_renderer, self._ui_scenegraph, input_service, dt, self._render_settings)
+    UIWidget.draw(self._dropdown, self._ui_renderer)
+    UIRenderer.end_pass(self._ui_renderer)
 
 	if self._ready then
 		self:_draw_blessings(dt, input_service)

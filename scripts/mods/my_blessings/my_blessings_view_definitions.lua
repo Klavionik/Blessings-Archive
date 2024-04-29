@@ -52,10 +52,20 @@ local scenegraph_definition = {
         size = {500, 50},
         position = {0, -35, 1}
     },
+    rarity_filter = {
+
+    },
+    weapons_filter = {
+        vertical_alignment = "top",
+        parent = "screen",
+        horizontal_alignment = "right",
+        size = {400, 50},
+        position = {-880, 179, 2}
+    }
 }
 
 local widget_definitions = {
-    settings_overlay = UIWidget.create_definition({
+    overlay = UIWidget.create_definition({
         {
             pass_type = "rect",
             style = {
