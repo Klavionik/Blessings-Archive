@@ -71,13 +71,14 @@ MyBlessingsView.init = function(self, settings)
     self._current_weapon_option_id = nil
     self._selected_weapon_category = nil
     self._weapon_dropdown = nil
-    self._close_weapon_dropdown = false
 
     self._rarity_options = {}
     self._current_rarity_option_id = nil
     self._selected_rarity = nil
     self._rarity_dropdown = nil
-    self._close_rarity_dropdown = false
+
+    self._opened_dropdown = nil
+    self._close_opened_dropdown = false
 
 	MyBlessingsView.super.init(self, definitions, settings)
 end
@@ -315,7 +316,27 @@ MyBlessingsView.update = function(self, dt, t, input_service)
         blueprints["dropdown"].update(self, self._rarity_dropdown, input_service, dt, t)
     end
 
+    if self._opened_dropdown and self._close_opened_dropdown then
+        self:_set_exclusive_focus_on_setting(nil)
+
+        self._close_opened_dropdown = false
+    end
+
+    self:_handle_input(input_service, dt, t)
+
 	return MyBlessingsView.super.update(self, dt, t, input_service)
+end
+
+MyBlessingsView._handle_input = function (self, input_service, dt, t)
+	if self._selected_dropdown then
+		local close_selected_setting = false
+
+		if input_service:get("left_pressed") or input_service:get("confirm_pressed") or input_service:get("back") then
+			close_selected_setting = true
+		end
+
+		self._close_opened_dropdown = close_selected_setting
+    end
 end
 
 MyBlessingsView._create_blessing_widgets = function(self)
@@ -366,8 +387,7 @@ MyBlessingsView._create_weapon_dropdown = function (self)
                 end
             end
 
-            self._close_weapon_dropdown = true
-            self:_toggle_dropdown(self._weapon_dropdown, "_close_weapon_dropdown")
+            self:_set_exclusive_focus_on_setting("weapons_filter")
             self:_create_blessing_widgets()
             self:_create_grid()
         end,
@@ -430,8 +450,7 @@ MyBlessingsView._create_rarity_dropdown = function (self)
                 end
             end
 
-            self._close_rarity_dropdown = true
-            self:_toggle_dropdown(self._rarity_dropdown, "_close_rarity_dropdown")
+            self:_set_exclusive_focus_on_setting("rarity_filter")
             self:_create_blessing_widgets()
             self:_create_grid()
         end,
@@ -483,7 +502,7 @@ end
 MyBlessingsView.cb_on_weapons_filter_pressed = function (self, widget, entry)
 	local pressed_function = entry.pressed_function
 
-    self:_toggle_dropdown(widget, "_close_weapon_dropdown")
+    self:_set_exclusive_focus_on_setting("weapons_filter")
 
 	if pressed_function then
 		pressed_function(self, widget, entry)
@@ -493,7 +512,7 @@ end
 MyBlessingsView.cb_on_rarity_filter_pressed = function (self, widget, entry)
 	local pressed_function = entry.pressed_function
 
-    self:_toggle_dropdown(widget, "_close_rarity_dropdown")
+    self:_set_exclusive_focus_on_setting("rarity_filter")
 
 	if pressed_function then
 		pressed_function(self, widget, entry)
@@ -555,6 +574,54 @@ MyBlessingsView._create_grid = function (self)
     grid:set_scrollbar_progress(0)
 
     self._blessing_grid = grid
+end
+
+
+MyBlessingsView._set_exclusive_focus_on_setting = function (self, widget_name)
+    local widgets = {self._weapon_dropdown, self._rarity_dropdown}
+	local selected_widget = nil
+
+	for i = 1, #widgets do
+		local widget = widgets[i]
+		local selected = widget.name == widget_name
+		local content = widget.content
+		content.exclusive_focus = selected
+		local hotspot = content.hotspot or content.button_hotspot
+
+		if hotspot then
+			hotspot.is_selected = selected
+
+			if selected then
+				selected_widget = widget
+			end
+		end
+	end
+
+	for i = 1, #widgets do
+		local widget = widgets[i]
+
+		if selected_widget and selected_widget ~= widget then
+			if widget.content.hotspot then
+				widget.content.hotspot.disabled = true
+			end
+		elseif widget.content.hotspot then
+			widget.content.hotspot.disabled = false
+		end
+	end
+
+	for i = 1, #widgets do
+		local widget = widgets[i]
+
+		if widget.content.hotspot then
+			if selected_widget then
+				widget.content.hotspot.disabled = widget ~= selected_widget
+			else
+				widget.content.hotspot.disabled = false
+			end
+		end
+	end
+
+	self._opened_dropdown = selected_widget
 end
 
 MyBlessingsView._draw_blessings = function(self, dt, input_service)
