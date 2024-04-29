@@ -55,19 +55,6 @@ local TRAIT_CATEGORIES = {
     "bespoke_thunderhammer_2h_p1",
 }
 
-local function cycle(elements)
-    local len = #elements
-    local i = 1
-    return function()
-        while true do
-          if i > len then i = 1 end
-          local next_el = elements[i]
-          i = i + 1
-          return next_el
-      end
-  end
-end
-
 MyBlessingsView = class("MyBlessingsView", "BaseView")
 
 MyBlessingsView.init = function(self, settings)
@@ -79,16 +66,19 @@ MyBlessingsView.init = function(self, settings)
     self._content_scenegraph_id = "canvas"
     self._grid_scenegraph_id = "grid"
 
-    self._tier_cycle = cycle({nil, 1, 2, 3, 4})
-    self._selected_tier = self._tier_cycle()
-    self._tier_legend_entry_id = nil
-
     self._weapons = {}
     self._weapon_options = {}
     self._current_weapon_option_id = nil
     self._selected_weapon_category = nil
-    self._dropdown = nil
-    self._close_dropdown = false
+    self._weapon_dropdown = nil
+    self._close_weapon_dropdown = false
+
+    self._rarity_options = {}
+    self._current_rarity_option_id = nil
+    self._selected_rarity = nil
+    self._rarity_dropdown = nil
+    self._close_rarity_dropdown = false
+
 	MyBlessingsView.super.init(self, definitions, settings)
 end
 
@@ -160,6 +150,22 @@ local make_weapons_options = function (weapons)
     return options
 end
 
+local make_rarity_options = function ()
+    local options = {
+        {id = "rarity_not_selected", display_name = "rarity_not_selected", value = nil}
+    }
+
+    for i = 1, 4 do
+        options[#options + 1] = {
+            id = "rarity_" .. i,
+            display_name = "tier_" .. i,
+            value = i,
+        }
+    end
+
+    return options
+end
+
 MyBlessingsView.on_enter = function(self)
 	MyBlessingsView.super.on_enter(self)
 
@@ -167,8 +173,10 @@ MyBlessingsView.on_enter = function(self)
     self:_create_offscreen_renderer()
     self._weapons = get_weapons()
     self._weapon_options = make_weapons_options(self._weapons)
+    self._rarity_options = make_rarity_options()
     self:_update_traits(TRAIT_CATEGORIES)
-    self._dropdown = self:_create_weapons_dropdown()
+    self._weapon_dropdown = self:_create_weapon_dropdown()
+    self._rarity_dropdown = self:_create_rarity_dropdown()
 end
 
 MyBlessingsView._setup_input_legend = function(self)
@@ -180,31 +188,14 @@ MyBlessingsView._setup_input_legend = function(self)
 		local on_pressed_callback = legend_input.on_pressed_callback
 			and callback(self, legend_input.on_pressed_callback)
 
-		local entry_id = self._input_legend_element:add_entry(
+		self._input_legend_element:add_entry(
 			legend_input.display_name,
 			legend_input.input_action,
 			legend_input.visibility_function,
 			on_pressed_callback,
 			legend_input.alignment
 		)
-
-        if legend_input.display_name == "cycle_tier" then
-            self._tier_legend_entry_id = entry_id
-        end
 	end
-end
-
-MyBlessingsView._on_space_pressed = function (self)
-    self._selected_tier = self._tier_cycle()
-    -- This probably can be done in a more efficient manner.
-    self:_create_blessing_widgets()
-    self:_create_grid()
-
-    if self._selected_tier then
-        self._input_legend_element:set_display_name(self._tier_legend_entry_id, "tier_" .. self._selected_tier)
-    else
-        self._input_legend_element:set_display_name(self._tier_legend_entry_id, "cycle_tier")
-    end
 end
 
 MyBlessingsView._update_traits = function(self, categories)
@@ -316,8 +307,12 @@ MyBlessingsView.update = function(self, dt, t, input_service)
         self._blessing_grid:update(dt, t, input_service)
     end
 
-    if self._dropdown then
-        blueprints["dropdown"].update(self, self._dropdown, input_service, dt, t)
+    if self._weapon_dropdown then
+        blueprints["dropdown"].update(self, self._weapon_dropdown, input_service, dt, t)
+    end
+
+    if self._rarity_dropdown then
+        blueprints["dropdown"].update(self, self._rarity_dropdown, input_service, dt, t)
     end
 
 	return MyBlessingsView.super.update(self, dt, t, input_service)
@@ -332,7 +327,7 @@ MyBlessingsView._create_blessing_widgets = function(self)
 	for i = 1, #self._traits do
 		local trait = self._traits[i]
 
-        if self._selected_tier and self._selected_tier ~= trait.rarity then
+        if self._selected_rarity and self._selected_rarity ~= trait.rarity then
             goto continue
         end
 
@@ -357,9 +352,8 @@ MyBlessingsView._create_blessing_widgets = function(self)
 	self._blessing_widgets = widgets
 end
 
-MyBlessingsView._create_weapons_dropdown = function (self)
+MyBlessingsView._create_weapon_dropdown = function (self)
     local widget_options = {
-        tooltip_text = "tooptip",
         widget_type = "dropdown",
         on_activated = function (option_id, template)
             self._current_weapon_option_id = option_id
@@ -372,8 +366,8 @@ MyBlessingsView._create_weapons_dropdown = function (self)
                 end
             end
 
-            self._close_dropdown = true
-            self:_toggle_dropdown(self._dropdown)
+            self._close_weapon_dropdown = true
+            self:_toggle_dropdown(self._weapon_dropdown, "_close_weapon_dropdown")
             self:_create_blessing_widgets()
             self:_create_grid()
         end,
@@ -398,7 +392,7 @@ MyBlessingsView._create_weapons_dropdown = function (self)
             return self._weapon_options
         end,
         display_name = "",
-        id = "wtf"
+        id = "weapons_filter"
     }
     local callback_name = "cb_on_weapons_filter_pressed"
     local scenegraph_id = "weapons_filter"
@@ -422,10 +416,84 @@ MyBlessingsView._create_weapons_dropdown = function (self)
     return widget
 end
 
+MyBlessingsView._create_rarity_dropdown = function (self)
+    local widget_options = {
+        widget_type = "dropdown",
+        on_activated = function (option_id, template)
+            self._current_rarity_option_id = option_id
+
+            for i = 1, #self._rarity_options do
+                local option = self._rarity_options[i]
+
+                if option.id == option_id then
+                    self._selected_rarity = option.value
+                end
+            end
+
+            self._close_rarity_dropdown = true
+            self:_toggle_dropdown(self._rarity_dropdown, "_close_rarity_dropdown")
+            self:_create_blessing_widgets()
+            self:_create_grid()
+        end,
+        on_changed = function (value)
+            self._current_rarity_option_id = value
+        end,
+        validation_function = function (...)
+            mod:warning("validation")
+        end,
+        get_function = function (template)
+            for i = 1, #self._rarity_options do
+                local option = self._rarity_options[i]
+
+                if option.id == self._current_rarity_option_id then
+                    return option.id
+                end
+            end
+
+            return "rarity_not_selected"
+        end,
+        options_function = function (...)
+            return self._rarity_options
+        end,
+        display_name = "",
+        id = "rarity_filter"
+    }
+    local callback_name = "cb_on_rarity_filter_pressed"
+    local scenegraph_id = "rarity_filter"
+    local widget_type = "dropdown"
+    local widget = nil
+    local template = blueprints[widget_type]
+    local size = template.size
+    local pass_template_function = template.pass_template_function
+    local pass_template = pass_template_function and pass_template_function(widget_options) or template.pass_template
+    local widget_definition = pass_template and UIWidget.create_definition(pass_template, scenegraph_id, nil, size)
+
+    local name = "rarity_filter"
+    widget = self:_create_widget(name, widget_definition)
+    widget.type = widget_type
+    local init = template.init
+
+    if init then
+        init(self, widget, widget_options, callback_name)
+    end
+
+    return widget
+end
+
 MyBlessingsView.cb_on_weapons_filter_pressed = function (self, widget, entry)
 	local pressed_function = entry.pressed_function
 
-    self:_toggle_dropdown(widget)
+    self:_toggle_dropdown(widget, "_close_weapon_dropdown")
+
+	if pressed_function then
+		pressed_function(self, widget, entry)
+	end
+end
+
+MyBlessingsView.cb_on_rarity_filter_pressed = function (self, widget, entry)
+	local pressed_function = entry.pressed_function
+
+    self:_toggle_dropdown(widget, "_close_rarity_dropdown")
 
 	if pressed_function then
 		pressed_function(self, widget, entry)
@@ -433,23 +501,15 @@ MyBlessingsView.cb_on_weapons_filter_pressed = function (self, widget, entry)
 end
 
 
-MyBlessingsView._toggle_dropdown = function (self, widget)
-    widget.content.exclusive_focus = not self._close_dropdown
-	local hotspot = widget.content.hotspot or widget.content.button_hotspot
+MyBlessingsView._toggle_dropdown = function (self, widget, close_flag)
+    widget.content.exclusive_focus = not self[close_flag]
+    local hotspot = widget.content.hotspot or widget.content.button_hotspot
 
     if hotspot then
-        hotspot.is_selected = not self._close_dropdown
+        hotspot.is_selected = not self[close_flag]
     end
 
-    self._close_dropdown = not self._close_dropdown
-end
-
-MyBlessingsView._get_text_height = function(self, text, text_style, optional_text_size)
-	local ui_renderer = self._offscreen_ui_renderer
-	local text_options = UIFonts.get_font_options_by_style(text_style)
-	local text_height = UIRenderer.text_height(ui_renderer, text, text_style.font_type, text_style.font_size, optional_text_size or text_style.size, text_options)
-
-	return text_height
+    self[close_flag] = not self[close_flag]
 end
 
 MyBlessingsView._create_offscreen_renderer = function(self)
@@ -518,8 +578,10 @@ end
 MyBlessingsView.draw = function(self, dt, t, input_service, layer)
 	self:_draw_elements(dt, t, self._ui_renderer, self._render_settings, input_service)
 
+    --Draw filter dropdowns.
     UIRenderer.begin_pass(self._ui_renderer, self._ui_scenegraph, input_service, dt, self._render_settings)
-    UIWidget.draw(self._dropdown, self._ui_renderer)
+    UIWidget.draw(self._weapon_dropdown, self._ui_renderer)
+    UIWidget.draw(self._rarity_dropdown, self._ui_renderer)
     UIRenderer.end_pass(self._ui_renderer)
 
 	if self._ready then

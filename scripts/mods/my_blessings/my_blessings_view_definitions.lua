@@ -52,16 +52,27 @@ local scenegraph_definition = {
         size = {500, 50},
         position = {0, -35, 1}
     },
-    rarity_filter = {
-
-    },
-    weapons_filter = {
+    filters_title_text = {
         vertical_alignment = "top",
         parent = "screen",
         horizontal_alignment = "right",
         size = {400, 50},
-        position = {-880, 179, 2}
-    }
+        position = {-880, 172, 2}
+    },
+    weapons_filter = {
+        vertical_alignment = "top",
+        parent = "filters_title_text",
+        horizontal_alignment = "right",
+        size = {400, 50},
+        position = {0, 60, 2}
+    },
+    rarity_filter = {
+        vertical_alignment = "top",
+        parent = "weapons_filter",
+        horizontal_alignment = "right",
+        size = {400, 50},
+        position = {0, 70, 2}
+    },
 }
 
 local widget_definitions = {
@@ -107,7 +118,16 @@ local widget_definitions = {
             }
         }
     }, "grid_mask"),
-    scrollbar = UIWidget.create_definition(ScrollbarPassTemplates.default_scrollbar, "scrollbar")
+    scrollbar = UIWidget.create_definition(ScrollbarPassTemplates.default_scrollbar, "scrollbar"),
+    filters_title_text = UIWidget.create_definition({
+        {
+            value_id = "text",
+            style_id = "text",
+            pass_type = "text",
+            value = mod:localize("filters_title"),
+            style = table.clone(UIFontSettings.header_2)
+        }
+    }, "filters_title_text"),
 }
 
 local legend_inputs = {
@@ -115,12 +135,6 @@ local legend_inputs = {
 		input_action = "back",
 		on_pressed_callback = "_on_back_pressed",
 		display_name = "loc_class_selection_button_back",
-		alignment = "left_alignment",
-	},
-    {
-		input_action = "next",
-		on_pressed_callback = "_on_space_pressed",
-		display_name = "cycle_tier",
 		alignment = "left_alignment",
 	},
 }
