@@ -1,5 +1,5 @@
 local mod = get_mod("my_blessings")
-local debug_mode = mod:get("enable_debug_mode")
+local debug_mode = mod:get("debug_mode")
 
 local Promise = require("scripts/foundation/utilities/promise")
 local ItemUtils = require("scripts/utilities/items")
@@ -48,7 +48,6 @@ local TRAIT_CATEGORIES = {
     "bespoke_ogryn_powermaul_p1",
     "bespoke_plasmagun_p1",
     "bespoke_powermaul_2h_p1",
-    -- "bespoke_powermaul_p1",
     "bespoke_powersword_p1",
     "bespoke_shotgun_p1",
     "bespoke_stubrevolver_p1",
@@ -202,6 +201,7 @@ end
 
 MyBlessingsView._update_traits = function(self, categories)
     self._traits = {}
+    local raw_traits = {}
 
     local profile = Managers.player:local_player_backend_profile()
     local character_id = profile and profile.character_id
@@ -244,7 +244,7 @@ MyBlessingsView._update_traits = function(self, categories)
                     }
                     
                     if debug_mode then
-                        mod:dump(trait_data, "trait_data_" .. trait.name, 4)
+                        table.insert(raw_traits, #raw_traits + 1, trait)
                     end
 
                     self._traits[#self._traits + 1] = trait_data
@@ -265,10 +265,15 @@ MyBlessingsView._update_traits = function(self, categories)
     end
 
     Promise.all(unpack(promises)):next(function ()
+        if debug_mode then
+            mod:dump_to_file(self._traits, "traits", 5)
+            mod:dump_to_file(raw_traits, "raw_traits", 5)
+        end
+
         self:_prepare_data()
     end):catch(function (error)
         mod:warning("Error fetching traits data")
-        mod:dump(error, "error", 3)
+        mod:dump_to_file(error, "error", 3)
     end)
 end
 

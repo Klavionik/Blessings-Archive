@@ -265,8 +265,6 @@ blueprints.dropdown = {
         local spacing = 0
         local scroll_amount = scroll_length > 0 and (size[2] + spacing) / scroll_length or 0
         content.scroll_amount = scroll_amount
-
-        mod:dump_to_file(content, "dropdown", 5)
     end,
     update = function (parent, widget, input_service, dt, t)
         local offset = widget.offset
