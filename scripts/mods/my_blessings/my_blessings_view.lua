@@ -398,9 +398,6 @@ MyBlessingsView._create_weapon_dropdown = function (self)
         on_changed = function (value)
             self._current_weapon_option_id = value
         end,
-        validation_function = function (...)
-            mod:warning("validation")
-        end,
         get_function = function (template)
             for i = 1, #self._weapon_options do
                 local option = self._weapon_options[i]
@@ -569,7 +566,6 @@ end
 
 
 MyBlessingsView._set_exclusive_focus_on_setting = function (self, widget_name)
-    mod:warning("set focus on %s", widget_name)
     local widgets = {self._weapon_dropdown, self._rarity_dropdown}
 	local selected_widget = nil
 
@@ -614,8 +610,6 @@ MyBlessingsView._set_exclusive_focus_on_setting = function (self, widget_name)
 	end
 
 	self._opened_dropdown = selected_widget
-
-    mod:warning("selected widget %s", selected_widget)
 end
 
 MyBlessingsView._draw_blessings = function(self, dt, input_service)
