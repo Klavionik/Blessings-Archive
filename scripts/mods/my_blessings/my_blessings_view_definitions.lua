@@ -54,10 +54,10 @@ local scenegraph_definition = {
     },
     filters_title_text = {
         vertical_alignment = "top",
-        parent = "screen",
-        horizontal_alignment = "right",
+        parent = "scrollbar",
+        horizontal_alignment = "left",
         size = {400, 50},
-        position = {-880, 172, 2}
+        position = {40, 0, 2}
     },
     weapons_filter = {
         vertical_alignment = "top",
