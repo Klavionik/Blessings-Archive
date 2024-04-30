@@ -328,7 +328,7 @@ MyBlessingsView.update = function(self, dt, t, input_service)
 end
 
 MyBlessingsView._handle_input = function (self, input_service, dt, t)
-	if self._selected_dropdown then
+	if self._opened_dropdown then
 		local close_selected_setting = false
 
 		if input_service:get("left_pressed") or input_service:get("confirm_pressed") or input_service:get("back") then
@@ -387,7 +387,6 @@ MyBlessingsView._create_weapon_dropdown = function (self)
                 end
             end
 
-            self:_set_exclusive_focus_on_setting("weapons_filter")
             self:_create_blessing_widgets()
             self:_create_grid()
         end,
@@ -450,7 +449,6 @@ MyBlessingsView._create_rarity_dropdown = function (self)
                 end
             end
 
-            self:_set_exclusive_focus_on_setting("rarity_filter")
             self:_create_blessing_widgets()
             self:_create_grid()
         end,
@@ -519,18 +517,6 @@ MyBlessingsView.cb_on_rarity_filter_pressed = function (self, widget, entry)
 	end
 end
 
-
-MyBlessingsView._toggle_dropdown = function (self, widget, close_flag)
-    widget.content.exclusive_focus = not self[close_flag]
-    local hotspot = widget.content.hotspot or widget.content.button_hotspot
-
-    if hotspot then
-        hotspot.is_selected = not self[close_flag]
-    end
-
-    self[close_flag] = not self[close_flag]
-end
-
 MyBlessingsView._create_offscreen_renderer = function(self)
 	local view_name = self.view_name
 	local world_layer = 10
@@ -578,6 +564,7 @@ end
 
 
 MyBlessingsView._set_exclusive_focus_on_setting = function (self, widget_name)
+    mod:warning("set focus on %s", widget_name)
     local widgets = {self._weapon_dropdown, self._rarity_dropdown}
 	local selected_widget = nil
 
@@ -622,6 +609,8 @@ MyBlessingsView._set_exclusive_focus_on_setting = function (self, widget_name)
 	end
 
 	self._opened_dropdown = selected_widget
+
+    mod:warning("selected widget %s", selected_widget)
 end
 
 MyBlessingsView._draw_blessings = function(self, dt, input_service)
