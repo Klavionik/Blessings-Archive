@@ -62,6 +62,7 @@ MyBlessingsView.init = function(self, settings)
     self._traits = nil
     self._blessing_widgets = nil
     self._blessing_grid = nil
+    self._max_blessing_height = nil
     self._ready = false
     self._content_scenegraph_id = "canvas"
     self._grid_scenegraph_id = "grid"
@@ -366,8 +367,12 @@ MyBlessingsView._create_blessing_widgets = function(self)
         ::continue::
 	end
 
+    if not self._max_blessing_height then
+        self._max_blessing_height = max_height
+    end
+
     for i = 1, #widgets do
-        widgets[i].content.size[2] = max_height
+        widgets[i].content.size[2] = self._max_blessing_height
     end
 
 	self._blessing_widgets = widgets
