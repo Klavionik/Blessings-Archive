@@ -38,11 +38,3 @@ mod:register_view({
 		transition_time = nil,
 	},
 })
-
-
-mod:hook(CLASS.ViewElemenMissionBoardOptions, "present", function(func, self, presentation_data)
-	func(self, presentation_data)
-	
-	mod:dump(presentation_data[1], "***PRESENTATION_DATA***", 3)
-	mod:dump(presentation_data[1].options_function(), "**OPTIONS**", 2)
-end)

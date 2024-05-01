@@ -8,7 +8,6 @@ local ScriptWorld = require("scripts/foundation/utilities/script_world")
 local ViewElementInputLegend = require("scripts/ui/view_elements/view_element_input_legend/view_element_input_legend")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIRenderer = require("scripts/managers/ui/ui_renderer")
-local UIFonts = require("scripts/managers/ui/ui_fonts")
 local UIWidgetGrid = require("scripts/ui/widget_logic/ui_widget_grid")
 
 local definitions = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_definitions")
@@ -86,6 +85,8 @@ end
 local get_weapons = function ()
     local items = Managers.backend.interfaces.master_data:items_cache():get_cached()
     local weapons = {}
+    --Save raw weapons for debug purposes.
+    local raw_weapons = {}
 
     for _, item in pairs(items) do
         local is_weapon = item.item_type == "WEAPON_RANGED" or item.item_type == "WEAPON_MELEE"
@@ -93,17 +94,18 @@ local get_weapons = function ()
         local excluded = string.match(name, "npc") or string.match(name, "bot") or string.match(name, "empty") or name == ""
 
         if is_weapon and not excluded then
+            raw_weapons[#raw_weapons + 1] = item
             local localized_name = Localize(name):match("^%s*(.-)%s*$") --Strip possible whitespaces.
 
-            if weapons[item.parent_pattern] ~= nil then
-                local i = #weapons[item.parent_pattern] + 1
-                weapons[item.parent_pattern][i] = {
+            if weapons[item.trait_category] ~= nil then
+                local i = #weapons[item.trait_category] + 1
+                weapons[item.trait_category][i] = {
                     name = name,
                     localized_name = localized_name
                 }
             else
-                weapons[item.parent_pattern] = {}
-                weapons[item.parent_pattern][1] = {
+                weapons[item.trait_category] = {}
+                weapons[item.trait_category][1] = {
                     name = name,
                     localized_name = localized_name
                 }
@@ -112,7 +114,8 @@ local get_weapons = function ()
     end
 
     if debug_mode then
-        mod:dump(weapons, "weapons", 3)
+        mod:dump_to_file(raw_weapons, "raw_weapons", 5)
+        mod:dump_to_file(weapons, "weapons", 5)
     end
 
     return weapons
@@ -145,7 +148,7 @@ local make_weapons_options = function (weapons)
     table.insert(options, 1, {display_name = "weapon_not_selected", value = nil, id = "weapon_not_selected", weapon_category = nil})
 
     if debug_mode then
-        mod:dump(options, "weapon_options", 2)
+        mod:dump_to_file(options, "weapon_options", 3)
     end
 
     return options
@@ -201,6 +204,7 @@ end
 
 MyBlessingsView._update_traits = function(self, categories)
     self._traits = {}
+    --Save raw traits for debug purposes.
     local raw_traits = {}
 
     local profile = Managers.player:local_player_backend_profile()
@@ -212,6 +216,9 @@ MyBlessingsView._update_traits = function(self, categories)
         for trait_name, seen_status in pairs(traits) do
             for rank = 1, 4 do
                 if seen_status[rank] == "seen" then
+                    table.insert(raw_traits, #raw_traits + 1, trait)
+
+                    local weapon = string.match(trait_name, "^content/items/traits/([%w_]+)/")
                     local fake_trait = {
                         count = 1,
                         characterId = character_id,
@@ -223,15 +230,14 @@ MyBlessingsView._update_traits = function(self, categories)
                         },
                         trait_name = trait_name,
                         uuid = math.uuid(),
-                        weapon = string.match(trait_name, "^content/items/traits/([%w_]+)/")
+                        weapon = weapon
                     }
 
                     local trait = MasterItems.get_item_instance(fake_trait, fake_trait.uuid)
                     local desc = ItemUtils.trait_description(trait, trait.rarity, trait.value)
                     local name = ItemUtils.display_name(trait)
 
-                    local weapon_restriction = trait.weapon_type_restriction[1]
-                    local fit_weapons = self._weapons[weapon_restriction] or {}
+                    local fit_weapons = self._weapons[weapon] or {}
 
                     local trait_data = {
                         trait_id = trait.name,
@@ -240,12 +246,8 @@ MyBlessingsView._update_traits = function(self, categories)
                         rarity = trait.rarity,
                         weapons = fit_weapons,
                         value = trait.value,
-                        weapon_restriction = weapon_restriction
+                        weapon_restriction = weapon
                     }
-                    
-                    if debug_mode then
-                        table.insert(raw_traits, #raw_traits + 1, trait)
-                    end
 
                     self._traits[#self._traits + 1] = trait_data
                 end
