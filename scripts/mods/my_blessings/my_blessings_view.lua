@@ -18,6 +18,7 @@ MyBlessingsView = class("MyBlessingsView", "BaseView")
 MyBlessingsView.init = function(self, settings)
 	self._settings = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_settings")
     self._traits = nil
+    self._trait_categories = {}
     self._blessing_widgets = nil
     self._blessing_grid = nil
     self._max_blessing_height = nil
@@ -40,51 +41,6 @@ MyBlessingsView.init = function(self, settings)
     self._close_opened_dropdown = false
 
 	MyBlessingsView.super.init(self, definitions, settings)
-end
-
-local get_weapons = function ()
-    local items = Managers.backend.interfaces.master_data:items_cache():get_cached()
-    local weapons = {}
-    --Save raw weapons for debug purposes.
-    local raw_weapons = {}
-
-    for _, item in pairs(items) do
-        local is_weapon = item.item_type == "WEAPON_RANGED" or item.item_type == "WEAPON_MELEE"
-        local name = item.display_name
-        local excluded = string.match(name, "npc") or string.match(name, "bot") or string.match(name, "empty") or name == ""
-
-        if is_weapon and not excluded then
-            raw_weapons[#raw_weapons + 1] = item
-            local localized_name = Localize(name):match("^%s*(.-)%s*$") --Strip possible whitespaces.
-
-            if weapons[item.trait_category] ~= nil then
-                local i = #weapons[item.trait_category] + 1
-                weapons[item.trait_category][i] = {
-                    name = name,
-                    localized_name = localized_name
-                }
-            else
-                weapons[item.trait_category] = {}
-                weapons[item.trait_category][1] = {
-                    name = name,
-                    localized_name = localized_name
-                }
-            end
-        end
-    end
-
-    if debug_mode then
-        mod:dump_to_file(raw_weapons, "raw_weapons", 5)
-        mod:dump_to_file(weapons, "weapons", 5)
-    end
-
-    local trait_categories = {}
-
-    for category, _ in pairs(weapons) do
-        trait_categories[#trait_categories + 1] = category
-    end
-
-    return trait_categories, weapons
 end
 
 local make_weapons_options = function (weapons)
@@ -141,7 +97,7 @@ MyBlessingsView.on_enter = function(self)
 
 	self:_setup_input_legend()
     self:_create_offscreen_renderer()
-    self._trait_categories, self._weapons = get_weapons()
+    self:_get_weapons()
     self._weapon_options = make_weapons_options(self._weapons)
     self._rarity_options = make_rarity_options()
     self:_update_traits()
@@ -166,6 +122,46 @@ MyBlessingsView._setup_input_legend = function(self)
 			legend_input.alignment
 		)
 	end
+end
+
+MyBlessingsView._get_weapons = function (self)
+    local items = Managers.backend.interfaces.master_data:items_cache():get_cached()
+    --Save raw weapons for debug purposes.
+    local raw_weapons = {}
+
+    for _, item in pairs(items) do
+        local is_weapon = item.item_type == "WEAPON_RANGED" or item.item_type == "WEAPON_MELEE"
+        local name = item.display_name
+        local excluded = string.match(name, "npc") or string.match(name, "bot") or string.match(name, "empty") or name == ""
+
+        if is_weapon and not excluded then
+            raw_weapons[#raw_weapons + 1] = item
+            local localized_name = Localize(name):match("^%s*(.-)%s*$") --Strip possible whitespaces.
+
+            if self._weapons[item.trait_category] ~= nil then
+                local i = #self._weapons[item.trait_category] + 1
+                self._weapons[item.trait_category][i] = {
+                    name = name,
+                    localized_name = localized_name
+                }
+            else
+                self._weapons[item.trait_category] = {}
+                self._weapons[item.trait_category][1] = {
+                    name = name,
+                    localized_name = localized_name
+                }
+            end
+        end
+    end
+
+    if debug_mode then
+        mod:dump_to_file(raw_weapons, "raw_weapons", 5)
+        mod:dump_to_file(self._weapons, "weapons", 5)
+    end
+
+    for category, _ in pairs(self._weapons) do
+        self._trait_categories[#self._trait_categories + 1] = category
+    end
 end
 
 MyBlessingsView._update_traits = function(self)
