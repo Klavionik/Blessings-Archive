@@ -13,46 +13,6 @@ local UIWidgetGrid = require("scripts/ui/widget_logic/ui_widget_grid")
 local definitions = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_definitions")
 local blueprints = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_blueprints")
 
-local TRAIT_CATEGORIES = {
-    "bespoke_autogun_p1",
-    "bespoke_autogun_p2",
-    "bespoke_autogun_p3",
-    "bespoke_autopistol_p1",
-    "bespoke_bolter_p1",
-    "bespoke_chainaxe_p1",
-    "bespoke_chainsword_2h_p1",
-    "bespoke_chainsword_p1",
-    "bespoke_combataxe_p1",
-    "bespoke_combataxe_p2",
-    "bespoke_combataxe_p3",
-    "bespoke_combatknife_p1",
-    "bespoke_combatsword_p1",
-    "bespoke_combatsword_p2",
-    "bespoke_combatsword_p3",
-    "bespoke_flamer_p1",
-    "bespoke_forcestaff_p1",
-    "bespoke_forcestaff_p2",
-    "bespoke_forcestaff_p3",
-    "bespoke_forcestaff_p4",
-    "bespoke_forcesword_p1",
-    "bespoke_lasgun_p1",
-    "bespoke_lasgun_p2",
-    "bespoke_lasgun_p3",
-    "bespoke_laspistol_p1",
-    "bespoke_ogryn_club_p1",
-    "bespoke_ogryn_club_p2",
-    "bespoke_ogryn_combatblade_p1",
-    "bespoke_ogryn_gauntlet_p1",
-    "bespoke_ogryn_heavystubber_p1",
-    "bespoke_ogryn_powermaul_p1",
-    "bespoke_plasmagun_p1",
-    "bespoke_powermaul_2h_p1",
-    "bespoke_powersword_p1",
-    "bespoke_shotgun_p1",
-    "bespoke_stubrevolver_p1",
-    "bespoke_thunderhammer_2h_p1",
-}
-
 MyBlessingsView = class("MyBlessingsView", "BaseView")
 
 MyBlessingsView.init = function(self, settings)
@@ -118,7 +78,13 @@ local get_weapons = function ()
         mod:dump_to_file(weapons, "weapons", 5)
     end
 
-    return weapons
+    local trait_categories = {}
+
+    for category, _ in pairs(weapons) do
+        trait_categories[#trait_categories + 1] = category
+    end
+
+    return trait_categories, weapons
 end
 
 local make_weapons_options = function (weapons)
@@ -175,10 +141,10 @@ MyBlessingsView.on_enter = function(self)
 
 	self:_setup_input_legend()
     self:_create_offscreen_renderer()
-    self._weapons = get_weapons()
+    self._trait_categories, self._weapons = get_weapons()
     self._weapon_options = make_weapons_options(self._weapons)
     self._rarity_options = make_rarity_options()
-    self:_update_traits(TRAIT_CATEGORIES)
+    self:_update_traits()
     self._weapon_dropdown = self:_create_weapon_dropdown()
     self._rarity_dropdown = self:_create_rarity_dropdown()
 end
@@ -202,7 +168,7 @@ MyBlessingsView._setup_input_legend = function(self)
 	end
 end
 
-MyBlessingsView._update_traits = function(self, categories)
+MyBlessingsView._update_traits = function(self)
     self._traits = {}
     --Save raw traits for debug purposes.
     local raw_traits = {}
@@ -259,7 +225,7 @@ MyBlessingsView._update_traits = function(self, categories)
         mod:warning("Error fetching traits data. Code: %s, msg: %s", error.status, error.body)
     end
 
-    for _, category in pairs(categories) do
+    for _, category in pairs(self._trait_categories) do
         local promise = Managers.data_service.crafting:trait_sticker_book(category)
         promise:next(process_category)
         promise:catch(log_error)
