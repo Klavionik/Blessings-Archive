@@ -45,20 +45,15 @@ end
 
 local make_weapons_options = function (weapons)
     local options = {}
-    local weapon_index = 1
 
-    for category, category_weapons in pairs(weapons) do
-        for _, weapon in pairs(category_weapons) do
-            local option = {
-                ignore_localization = true,
-                display_name = weapon.localized_name,
-                id = "weapon_" .. weapon_index,
-                value = "weapon_" .. weapon.name,
-                weapon_category = category
-            }
-            options[#options + 1] = option
-            weapon_index = weapon_index + 1
-        end
+    for i, category in pairs(weapons) do
+        local option = {
+            ignore_localization = true,
+            display_name = mod:localize(category),
+            id = "weapon_" .. i,
+            value = category,
+        }
+        options[#options + 1] = option
     end
 
     --Sort alphabetically.
@@ -98,7 +93,7 @@ MyBlessingsView.on_enter = function(self)
 	self:_setup_input_legend()
     self:_create_offscreen_renderer()
     self:_get_weapons()
-    self._weapon_options = make_weapons_options(self._weapons)
+    self._weapon_options = make_weapons_options(self._trait_categories)
     self._rarity_options = make_rarity_options()
     self:_update_traits()
     self._weapon_dropdown = self:_create_weapon_dropdown()
@@ -357,7 +352,7 @@ MyBlessingsView._create_weapon_dropdown = function (self)
                 local option = self._weapon_options[i]
 
                 if option.id == option_id then
-                    self._selected_weapon_category = option.weapon_category
+                    self._selected_weapon_category = option.value
                 end
             end
 
