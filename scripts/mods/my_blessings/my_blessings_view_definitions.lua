@@ -73,6 +73,20 @@ local scenegraph_definition = {
         size = {400, 50},
         position = {0, 70, 2}
     },
+    shown_count = {
+        vertical_alignment = "top",
+        parent = "rarity_filter",
+        horizontal_alignment = "left",
+        size = {200, 0},
+        position = {0, 80, 2}
+    },
+    total_count = {
+        vertical_alignment = "top",
+        parent = "shown_count",
+        horizontal_alignment = "left",
+        size = {200, 0},
+        position = {0, 40, 2}
+    }
 }
 
 local widget_definitions = {
@@ -128,6 +142,24 @@ local widget_definitions = {
             style = table.clone(UIFontSettings.header_2)
         }
     }, "filters_title_text"),
+    shown_count = UIWidget.create_definition({
+        {
+            value_id = "text",
+            style_id = "text",
+            pass_type = "text",
+            value = mod:localize("shown_count", 0),
+            style = table.clone(UIFontSettings.header_3)
+        }
+    }, "shown_count"),
+    total_count = UIWidget.create_definition({
+        {
+            value_id = "text",
+            style_id = "text",
+            pass_type = "text",
+            value = mod:localize("total_count", 0),
+            style = table.clone(UIFontSettings.header_3)
+        }
+    }, "total_count"),
 }
 
 local legend_inputs = {

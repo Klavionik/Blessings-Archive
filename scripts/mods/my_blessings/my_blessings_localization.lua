@@ -52,6 +52,14 @@ return {
         en = "Filters",
         ru = "Фильтры"
     },
+    shown_count = {
+        en = "Shown: %s",
+        ru = "Показано: %s"
+    },
+    total_count = {
+        en = "Total: %s",
+        ru = "Всего: %s"
+    },
     -- Trait categories.
     bespoke_lasgun_p2 = {
         en = "Helbore Lasgun",

@@ -17,9 +17,9 @@ MyBlessingsView = class("MyBlessingsView", "BaseView")
 
 MyBlessingsView.init = function(self, settings)
 	self._settings = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_settings")
-    self._traits = nil
+    self._traits = {}
     self._trait_categories = {}
-    self._blessing_widgets = nil
+    self._blessing_widgets = {}
     self._blessing_grid = nil
     self._max_blessing_height = nil
     self._ready = false
@@ -286,6 +286,14 @@ MyBlessingsView.update = function(self, dt, t, input_service)
         self:_set_exclusive_focus_on_setting(nil)
 
         self._close_opened_dropdown = false
+    end
+
+    if self:has_widget("total_count") then
+        self._widgets_by_name.total_count.content.text = mod:localize("total_count", #self._traits)
+    end
+
+    if self:has_widget("shown_count") then
+        self._widgets_by_name.shown_count.content.text = mod:localize("shown_count", #self._blessing_widgets)
     end
 
     self:_handle_input(input_service, dt, t)
