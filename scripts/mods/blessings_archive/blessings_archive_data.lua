@@ -1,4 +1,4 @@
-local mod = get_mod("my_blessings")
+local mod = get_mod("blessings_archive")
 
 return {
 	name = mod:localize("mod_title"),
@@ -6,12 +6,12 @@ return {
 	is_togglable = false,
 	options = {
 		widgets = {
-			{setting_id = "open_my_blessings",
+			{setting_id = "open_blessings_archive",
 				type = "keybind",
 				default_value = {"f6"},
 				keybind_trigger = "pressed",
 				keybind_type = "view_toggle",
-				view_name = "my_blessings_view"
+				view_name = "blessings_archive_view"
 			},
 			{
                 setting_id = "debug_mode",
