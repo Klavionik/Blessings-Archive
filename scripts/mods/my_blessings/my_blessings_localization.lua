@@ -1,19 +1,19 @@
 local mod = get_mod("my_blessings")
 
 mod:add_global_localize_strings({
-    tier_1 = {
+    rarity_1 = {
         en = "Tier I",
         ru = "Уровень I"
     },
-    tier_2 = {
+    rarity_2 = {
         en = "Tier II",
         ru = "Уровень II"
     },
-    tier_3 = {
+    rarity_3 = {
         en = "Tier III",
         ru = "Уровень III"
     },
-    tier_4 = {
+    rarity_4 = {
         en = "Tier IV",
         ru = "Уровень IV"
     },
@@ -44,10 +44,6 @@ return {
         en = "Debug Mode",
 		ru = "Режим отладки"
     },
-	fits_any_weapon = {
-		en = "Fits on any weapon",
-		ru = "Подходит к любому оружию"
-	},
 	fits_weapon = {
 		en = "Fits on:",
 		ru = "Подходит к:"
@@ -56,6 +52,7 @@ return {
         en = "Filters",
         ru = "Фильтры"
     },
+    -- Trait categories.
     bespoke_lasgun_p2 = {
         en = "Helbore Lasgun",
         ru = "Хелборский лазган"

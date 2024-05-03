@@ -56,7 +56,7 @@ local make_weapons_options = function (weapons)
         options[#options + 1] = option
     end
 
-    --Sort alphabetically.
+    -- Sort alphabetically.
     table.sort(options, function (a, b)
         return a.display_name < b.display_name
     end)
@@ -79,7 +79,7 @@ local make_rarity_options = function ()
     for i = 1, 4 do
         options[#options + 1] = {
             id = "rarity_" .. i,
-            display_name = "tier_" .. i,
+            display_name = "rarity_" .. i,
             value = i,
         }
     end
@@ -120,8 +120,9 @@ MyBlessingsView._setup_input_legend = function(self)
 end
 
 MyBlessingsView._get_weapons = function (self)
+    self._weapons = {}
     local items = Managers.backend.interfaces.master_data:items_cache():get_cached()
-    --Save raw weapons for debug purposes.
+    -- Save raw weapons for debug purposes.
     local raw_weapons = {}
 
     for _, item in pairs(items) do
@@ -131,7 +132,7 @@ MyBlessingsView._get_weapons = function (self)
 
         if is_weapon and not excluded then
             raw_weapons[#raw_weapons + 1] = item
-            local localized_name = Localize(name):match("^%s*(.-)%s*$") --Strip possible whitespaces.
+            local localized_name = Localize(name):match("^%s*(.-)%s*$") -- Strip possible whitespaces.
 
             if self._weapons[item.trait_category] ~= nil then
                 local i = #self._weapons[item.trait_category] + 1
@@ -161,7 +162,7 @@ end
 
 MyBlessingsView._update_traits = function(self)
     self._traits = {}
-    --Save raw traits for debug purposes.
+    -- Save raw traits for debug purposes.
     local raw_traits = {}
 
     local profile = Managers.player:local_player_backend_profile()

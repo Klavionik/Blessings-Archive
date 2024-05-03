@@ -193,11 +193,7 @@ local blueprints = {
                 weapon_names[#weapon_names + 1] = weapon.localized_name
             end
 
-            if trait.weapons and #trait.weapons > 0 then
-                widget.content.weapons = fits_on_localized .. " " .. table.concat(weapon_names, ", ")
-            else
-                widget.content.weapons = mod:localize("fits_any_weapon")
-            end
+            widget.content.weapons = fits_on_localized .. " " .. table.concat(weapon_names, ", ")
 
             local style = widget.style
 
@@ -222,21 +218,23 @@ local blueprints = {
 
 local DropdownPassTemplates = require("scripts/ui/pass_templates/dropdown_pass_templates")
 local dropdown_width = 450
+local dropdown_height = 50
+local scroll_area_height = 600
 
 blueprints.dropdown = {
     size = {
         dropdown_width,
-        50
+        dropdown_height
     },
     pass_template_function = function (entry)
         local options = entry.options_function and entry.options_function() or entry.options
         local num_visible_options = math.min(#options, 8)
 
-        return DropdownPassTemplates.settings_dropdown(dropdown_width, 50, dropdown_width, num_visible_options, true)
+        return DropdownPassTemplates.settings_dropdown(dropdown_width, dropdown_height, dropdown_width, num_visible_options, true)
     end,
     init = function (parent, widget, entry, callback_name)
         local content = widget.content
-        --Empty string means no dropdown
+        -- Empty string means no dropdown label.
         content.text = ""
         content.entry = entry
         local options = entry.options or entry.options_function and entry.options_function()
@@ -304,7 +302,6 @@ blueprints.dropdown = {
         local template = blueprints[widget_type]
         local size = template.size
         local scroll_amount = 0
-        local scroll_area_height = 600
 
         local dropdown_length = size[2] * (num_visible_options + 1)
         local grow_downwards = true
@@ -400,7 +397,7 @@ blueprints.dropdown = {
             style[outline_style_id].size[1] = entry_length
             style[option_text_id].size[1] = entry_length
 
-            --Change default font size.
+            -- Override default font size.
             style[option_text_id].font_size = 20
             style.text.font_size = 20
             option_index = option_index + 1
