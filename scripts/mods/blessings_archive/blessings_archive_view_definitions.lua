@@ -1,5 +1,5 @@
-local mod = get_mod("my_blessings")
-local settings = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_settings")
+local mod = get_mod("blessings_archive")
+local settings = mod:io_dofile("blessings_archive/scripts/mods/blessings_archive/blessings_archive_view_settings")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 local UIWorkspaceSettings = require("scripts/settings/ui/ui_workspace_settings")

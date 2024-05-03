@@ -1,4 +1,4 @@
-local mod = get_mod("my_blessings")
+local mod = get_mod("blessings_archive")
 
 mod:add_global_localize_strings({
     rarity_1 = {
@@ -29,12 +29,12 @@ mod:add_global_localize_strings({
 
 return {
 	mod_title = {
-		en = "My Blessings",
-		ru = "Мои благословения"
+		en = "Blessings Archive",
+		ru = "Архив благословений"
 	},
-	open_my_blessings = {
-		en = "Open My Blessings",
-		ru = "Открыть мои благословения"
+	open_blessings_archive = {
+		en = "Open Blessings Archive",
+		ru = "Открыть архив благословений"
 	},
 	mod_description = {
 		en = "Displays all blessings that you have earned",

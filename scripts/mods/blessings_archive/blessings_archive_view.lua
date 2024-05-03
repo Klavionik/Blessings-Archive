@@ -1,4 +1,4 @@
-local mod = get_mod("my_blessings")
+local mod = get_mod("blessings_archive")
 local debug_mode = mod:get("debug_mode")
 
 local Promise = require("scripts/foundation/utilities/promise")
@@ -10,13 +10,13 @@ local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIRenderer = require("scripts/managers/ui/ui_renderer")
 local UIWidgetGrid = require("scripts/ui/widget_logic/ui_widget_grid")
 
-local definitions = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_definitions")
-local blueprints = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_blueprints")
+local definitions = mod:io_dofile("blessings_archive/scripts/mods/blessings_archive/blessings_archive_view_definitions")
+local blueprints = mod:io_dofile("blessings_archive/scripts/mods/blessings_archive/blessings_archive_view_blueprints")
 
-MyBlessingsView = class("MyBlessingsView", "BaseView")
+BlessingsArchiveView = class("BlessingsArchiveView", "BaseView")
 
-MyBlessingsView.init = function(self, settings)
-	self._settings = mod:io_dofile("my_blessings/scripts/mods/my_blessings/my_blessings_view_settings")
+BlessingsArchiveView.init = function(self, settings)
+	self._settings = mod:io_dofile("blessings_archive/scripts/mods/blessings_archive/blessings_archive_view_settings")
     self._traits = {}
     self._trait_categories = {}
     self._blessing_widgets = {}
@@ -40,7 +40,7 @@ MyBlessingsView.init = function(self, settings)
     self._opened_dropdown = nil
     self._close_opened_dropdown = false
 
-	MyBlessingsView.super.init(self, definitions, settings)
+	BlessingsArchiveView.super.init(self, definitions, settings)
 end
 
 local make_weapons_options = function (weapons)
@@ -87,8 +87,8 @@ local make_rarity_options = function ()
     return options
 end
 
-MyBlessingsView.on_enter = function(self)
-	MyBlessingsView.super.on_enter(self)
+BlessingsArchiveView.on_enter = function(self)
+	BlessingsArchiveView.super.on_enter(self)
 
 	self:_setup_input_legend()
     self:_create_offscreen_renderer()
@@ -100,7 +100,7 @@ MyBlessingsView.on_enter = function(self)
     self._rarity_dropdown = self:_create_rarity_dropdown()
 end
 
-MyBlessingsView._setup_input_legend = function(self)
+BlessingsArchiveView._setup_input_legend = function(self)
 	self._input_legend_element = self:_add_element(ViewElementInputLegend, "input_legend", 10)
 	local legend_inputs = self._definitions.legend_inputs
 
@@ -119,7 +119,7 @@ MyBlessingsView._setup_input_legend = function(self)
 	end
 end
 
-MyBlessingsView._get_weapons = function (self)
+BlessingsArchiveView._get_weapons = function (self)
     self._weapons = {}
     local items = Managers.backend.interfaces.master_data:items_cache():get_cached()
     -- Save raw weapons for debug purposes.
@@ -160,7 +160,7 @@ MyBlessingsView._get_weapons = function (self)
     end
 end
 
-MyBlessingsView._update_traits = function(self)
+BlessingsArchiveView._update_traits = function(self)
     self._traits = {}
     -- Save raw traits for debug purposes.
     local raw_traits = {}
@@ -237,7 +237,7 @@ MyBlessingsView._update_traits = function(self)
     end)
 end
 
-MyBlessingsView._prepare_data = function (self)
+BlessingsArchiveView._prepare_data = function (self)
     -- Sort traits by rarity, then name.
     table.sort(self._traits, function (a, b)
         return a.rarity < b.rarity or (a.rarity == b.rarity and a.name < b.name)
@@ -249,11 +249,11 @@ MyBlessingsView._prepare_data = function (self)
     self._ready = true
 end
 
-MyBlessingsView._on_back_pressed = function(self)
+BlessingsArchiveView._on_back_pressed = function(self)
 	Managers.ui:close_view(self.view_name)
 end
 
-MyBlessingsView._destroy_renderer = function(self)
+BlessingsArchiveView._destroy_renderer = function(self)
 	if self._offscreen_ui_renderer then
 		self._offscreen_ui_renderer = nil
 	end
@@ -269,7 +269,7 @@ MyBlessingsView._destroy_renderer = function(self)
 	end
 end
 
-MyBlessingsView.update = function(self, dt, t, input_service)
+BlessingsArchiveView.update = function(self, dt, t, input_service)
     if self._blessing_grid then
         self._blessing_grid:update(dt, t, input_service)
     end
@@ -298,10 +298,10 @@ MyBlessingsView.update = function(self, dt, t, input_service)
 
     self:_handle_input(input_service, dt, t)
 
-	return MyBlessingsView.super.update(self, dt, t, input_service)
+	return BlessingsArchiveView.super.update(self, dt, t, input_service)
 end
 
-MyBlessingsView._handle_input = function (self, input_service, dt, t)
+BlessingsArchiveView._handle_input = function (self, input_service, dt, t)
 	if self._opened_dropdown then
 		local close_selected_setting = false
 
@@ -313,7 +313,7 @@ MyBlessingsView._handle_input = function (self, input_service, dt, t)
     end
 end
 
-MyBlessingsView._create_blessing_widgets = function(self)
+BlessingsArchiveView._create_blessing_widgets = function(self)
 	local blueprint = blueprints.blessing
 	local widgets = {}
 	local definition = UIWidget.create_definition(blueprint.pass_template, self._grid_scenegraph_id, nil, blueprint.size)
@@ -351,7 +351,7 @@ MyBlessingsView._create_blessing_widgets = function(self)
 	self._blessing_widgets = widgets
 end
 
-MyBlessingsView._create_weapon_dropdown = function (self)
+BlessingsArchiveView._create_weapon_dropdown = function (self)
     local widget_options = {
         widget_type = "dropdown",
         on_activated = function (option_id, template)
@@ -410,7 +410,7 @@ MyBlessingsView._create_weapon_dropdown = function (self)
     return widget
 end
 
-MyBlessingsView._create_rarity_dropdown = function (self)
+BlessingsArchiveView._create_rarity_dropdown = function (self)
     local widget_options = {
         widget_type = "dropdown",
         on_activated = function (option_id, template)
@@ -472,7 +472,7 @@ MyBlessingsView._create_rarity_dropdown = function (self)
     return widget
 end
 
-MyBlessingsView.cb_on_weapons_filter_pressed = function (self, widget, entry)
+BlessingsArchiveView.cb_on_weapons_filter_pressed = function (self, widget, entry)
 	local pressed_function = entry.pressed_function
 
     self:_set_exclusive_focus_on_setting("weapons_filter")
@@ -482,7 +482,7 @@ MyBlessingsView.cb_on_weapons_filter_pressed = function (self, widget, entry)
 	end
 end
 
-MyBlessingsView.cb_on_rarity_filter_pressed = function (self, widget, entry)
+BlessingsArchiveView.cb_on_rarity_filter_pressed = function (self, widget, entry)
 	local pressed_function = entry.pressed_function
 
     self:_set_exclusive_focus_on_setting("rarity_filter")
@@ -492,7 +492,7 @@ MyBlessingsView.cb_on_rarity_filter_pressed = function (self, widget, entry)
 	end
 end
 
-MyBlessingsView._create_offscreen_renderer = function(self)
+BlessingsArchiveView._create_offscreen_renderer = function(self)
 	local view_name = self.view_name
 	local world_layer = 10
 	local world_name = self.__class_name .. "_ui_offscreen_world"
@@ -514,7 +514,7 @@ MyBlessingsView._create_offscreen_renderer = function(self)
 end
 
 
-MyBlessingsView._create_grid = function (self)
+BlessingsArchiveView._create_grid = function (self)
     local grid_spacing = {20, 30}
     local direction = "down"
     local grid = UIWidgetGrid:new(
@@ -538,7 +538,7 @@ MyBlessingsView._create_grid = function (self)
 end
 
 
-MyBlessingsView._set_exclusive_focus_on_setting = function (self, widget_name)
+BlessingsArchiveView._set_exclusive_focus_on_setting = function (self, widget_name)
     local widgets = {self._weapon_dropdown, self._rarity_dropdown}
 	local selected_widget = nil
 
@@ -585,7 +585,7 @@ MyBlessingsView._set_exclusive_focus_on_setting = function (self, widget_name)
 	self._opened_dropdown = selected_widget
 end
 
-MyBlessingsView._draw_blessings = function(self, dt, input_service)
+BlessingsArchiveView._draw_blessings = function(self, dt, input_service)
     local render_settings = self._render_settings
     local ui_renderer = self._offscreen_ui_renderer
     local ui_scenegraph = self._ui_scenegraph
@@ -603,7 +603,7 @@ MyBlessingsView._draw_blessings = function(self, dt, input_service)
     UIRenderer.end_pass(ui_renderer)
 end
 
-MyBlessingsView.draw = function(self, dt, t, input_service, layer)
+BlessingsArchiveView.draw = function(self, dt, t, input_service, layer)
 	self:_draw_elements(dt, t, self._ui_renderer, self._render_settings, input_service)
 
     --Draw filter dropdowns.
@@ -616,18 +616,18 @@ MyBlessingsView.draw = function(self, dt, t, input_service, layer)
 		self:_draw_blessings(dt, input_service)
 	end
 
-	MyBlessingsView.super.draw(self, dt, t, input_service, layer)
+	BlessingsArchiveView.super.draw(self, dt, t, input_service, layer)
 end
 
 
-MyBlessingsView._draw_widgets = function(self, dt, t, input_service, ui_renderer, render_settings)
-	MyBlessingsView.super._draw_widgets(self, dt, t, input_service, ui_renderer, render_settings)
+BlessingsArchiveView._draw_widgets = function(self, dt, t, input_service, ui_renderer, render_settings)
+	BlessingsArchiveView.super._draw_widgets(self, dt, t, input_service, ui_renderer, render_settings)
 end
 
-MyBlessingsView.on_exit = function(self)
-	MyBlessingsView.super.on_exit(self)
+BlessingsArchiveView.on_exit = function(self)
+	BlessingsArchiveView.super.on_exit(self)
 
 	self:_destroy_renderer()
 end
 
-return MyBlessingsView
+return BlessingsArchiveView

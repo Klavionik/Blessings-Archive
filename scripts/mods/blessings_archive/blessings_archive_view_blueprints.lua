@@ -1,4 +1,4 @@
-local mod = get_mod("my_blessings")
+local mod = get_mod("blessings_archive")
 local TextUtilities = require("scripts/utilities/ui/text")
 local UIRenderer = require("scripts/managers/ui/ui_renderer")
 local UIFonts = require("scripts/managers/ui/ui_fonts")
@@ -419,4 +419,4 @@ blueprints.dropdown = {
     end
 }
 
-return settings("MyBlessingsViewContentBlueprints", blueprints)
+return settings("BlessingsArchiveViewContentBlueprints", blueprints)

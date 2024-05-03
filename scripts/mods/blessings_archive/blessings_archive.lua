@@ -1,21 +1,21 @@
-local mod = get_mod("my_blessings")
+local mod = get_mod("blessings_archive")
 
 local UISoundEvents = require("scripts/settings/ui/ui_sound_events")
 local WwiseGameSyncSettings = require("scripts/settings/wwise_game_sync/wwise_game_sync_settings")
 
-mod:add_require_path("my_blessings/scripts/mods/my_blessings/my_blessings_view")
+mod:add_require_path("blessings_archive/scripts/mods/blessings_archive/blessings_archive_view")
 
 mod:register_view({
-	view_name = "my_blessings_view",
+	view_name = "blessings_archive_view",
 	view_settings = {
 		init_view_function = function(ingame_ui_context)
 			return true
 		end,
 		state_bound = true,
 		display_name = "loc_eye_color_sienna_desc", -- Only used for debug
-		path = "my_blessings/scripts/mods/my_blessings/my_blessings_view",
+		path = "blessings_archive/scripts/mods/blessings_archive/blessings_archive_view",
 		-- package = "", -- Optional package to load with view
-		class = "MyBlessingsView",
+		class = "BlessingsArchiveView",
 		disable_game_world = false,
 		load_always = true,
 		load_in_hub = true,
