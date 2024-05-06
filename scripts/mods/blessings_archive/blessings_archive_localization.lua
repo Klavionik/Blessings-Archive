@@ -67,12 +67,12 @@ return {
     shown_count = {
         en = "Shown: %s",
         ru = "Показано: %s",
-        ["zh-cn"] = "显示：",
+        ["zh-cn"] = "显示： %s",
     },
     total_count = {
         en = "Total: %s",
         ru = "Всего: %s",
-        ["zh-cn"] = "总数：",
+        ["zh-cn"] = "总数： %s",
     },
     -- Trait categories.
     bespoke_lasgun_p2 = {
