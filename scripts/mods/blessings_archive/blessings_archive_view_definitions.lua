@@ -86,6 +86,13 @@ local scenegraph_definition = {
         horizontal_alignment = "left",
         size = {200, 0},
         position = {0, 40, 2}
+    },
+    seen_status_tabs = {
+        vertical_alignment = "top",
+        parent = "total_count",
+        horizontal_alignment = "left",
+        size = {500, 0},
+        position = {0, 40, 2}
     }
 }
 
