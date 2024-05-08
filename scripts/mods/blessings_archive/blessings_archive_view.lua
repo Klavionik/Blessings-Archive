@@ -100,6 +100,7 @@ end
 BlessingsArchiveView.on_enter = function(self)
     BlessingsArchiveView.super.on_enter(self)
 
+    self._blessing_definition = UIWidget.create_definition(blueprints.blessing.pass_template, self._grid_scenegraph_id, nil, blueprints.blessing.size)
     self:_setup_input_legend()
     self:_create_offscreen_renderer()
     self:_get_weapons()
@@ -476,6 +477,7 @@ BlessingsArchiveView._prepare_data = function(self)
         return a.rarity < b.rarity or (a.rarity == b.rarity and a.name < b.name)
     end)
 
+    self._max_blessing_height = self:_find_max_card_height()
     self:_create_blessing_widgets()
     self:_create_grid()
 
@@ -547,11 +549,22 @@ BlessingsArchiveView._handle_input = function(self, input_service, dt, t)
     end
 end
 
-BlessingsArchiveView._create_blessing_widgets = function(self)
-    local blueprint = blueprints.blessing
-    local widgets = {}
-    local definition = UIWidget.create_definition(blueprint.pass_template, self._grid_scenegraph_id, nil, blueprint.size)
+BlessingsArchiveView._find_max_card_height = function(self)
     local max_height = 0
+
+    for i = 1, #self._traits do
+        local trait = self._traits[i]
+        local widget = UIWidget.init("blessing_" .. i, self._blessing_definition)
+        blueprints.blessing.init(self._offscreen_ui_renderer, widget, trait)
+
+        max_height = math.max(max_height, widget.content.size[2])
+    end
+
+    return max_height
+end
+
+BlessingsArchiveView._create_blessing_widgets = function(self)
+    local widgets = {}
 
     for i = 1, #self._traits do
         local trait = self._traits[i]
@@ -572,22 +585,13 @@ BlessingsArchiveView._create_blessing_widgets = function(self)
             end
         end
 
-        local widget = UIWidget.init("blessing_" .. i, definition)
-        blueprint.init(self._offscreen_ui_renderer, widget, trait)
-
-        max_height = math.max(max_height, widget.content.size[2])
+        local widget = UIWidget.init("blessing_" .. i, self._blessing_definition)
+        blueprints.blessing.init(self._offscreen_ui_renderer, widget, trait)
+        widget.content.size[2] = self._max_blessing_height
 
         widgets[#widgets + 1] = widget
 
         :: continue ::
-    end
-
-    if not self._max_blessing_height then
-        self._max_blessing_height = max_height
-    end
-
-    for i = 1, #widgets do
-        widgets[i].content.size[2] = self._max_blessing_height
     end
 
     self._blessing_widgets = widgets
