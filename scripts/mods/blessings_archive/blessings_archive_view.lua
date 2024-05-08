@@ -173,42 +173,46 @@ BlessingsArchiveView._update_traits = function(self)
     local function process_category(traits)
         for trait_name, seen_status in pairs(traits) do
             for rank = 1, 4 do
-                if seen_status[rank] == "seen" then
-                    table.insert(raw_traits, #raw_traits + 1, trait)
-
-                    local weapon = string.match(trait_name, "^content/items/traits/([%w_]+)/")
-                    local fake_trait = {
-                        count = 1,
-                        characterId = character_id,
-                        masterDataInstance = {
-                            id = trait_name,
-                            overrides = {
-                                rarity = rank
-                            }
-                        },
-                        trait_name = trait_name,
-                        uuid = math.uuid(),
-                        weapon = weapon
-                    }
-
-                    local trait = MasterItems.get_item_instance(fake_trait, fake_trait.uuid)
-                    local desc = ItemUtils.trait_description(trait, trait.rarity, trait.value)
-                    local name = ItemUtils.display_name(trait)
-
-                    local fit_weapons = self._weapons[weapon] or {}
-
-                    local trait_data = {
-                        trait_id = trait.name,
-                        desc = desc,
-                        name = name,
-                        rarity = trait.rarity,
-                        weapons = fit_weapons,
-                        value = trait.value,
-                        weapon_restriction = weapon
-                    }
-
-                    self._traits[#self._traits + 1] = trait_data
+                if seen_status[rank] == "invalid" then
+                    goto continue
                 end
+
+                local is_seen = seen_status[rank] == "seen"
+                local weapon = string.match(trait_name, "^content/items/traits/([%w_]+)/")
+                local fake_trait = {
+                    count = 1,
+                    characterId = character_id,
+                    masterDataInstance = {
+                        id = trait_name,
+                        overrides = {
+                            rarity = rank
+                        }
+                    },
+                    trait_name = trait_name,
+                    uuid = math.uuid(),
+                    weapon = weapon
+                }
+
+                local trait = MasterItems.get_item_instance(fake_trait, fake_trait.uuid)
+                local desc = ItemUtils.trait_description(trait, trait.rarity, trait.value)
+                local name = ItemUtils.display_name(trait)
+
+                local fit_weapons = self._weapons[weapon] or {}
+
+                local trait_data = {
+                    trait_id = trait.name,
+                    desc = desc,
+                    name = name,
+                    rarity = trait.rarity,
+                    weapons = fit_weapons,
+                    value = trait.value,
+                    weapon_restriction = weapon,
+                    is_seen = is_seen
+                }
+
+                self._traits[#self._traits + 1] = trait_data
+
+                ::continue::
             end
         end
     end
