@@ -13,12 +13,13 @@ local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIRenderer = require("scripts/managers/ui/ui_renderer")
 local UIWidgetGrid = require("scripts/ui/widget_logic/ui_widget_grid")
 local ViewElementTabMenu = require("scripts/ui/view_elements/view_element_tab_menu/view_element_tab_menu")
-local ButtonPassTemplates = require("scripts/ui/pass_templates/button_pass_templates")
 
 local definitions = mod:io_dofile("blessings_archive/scripts/mods/blessings_archive/blessings_archive_view_definitions")
 local blueprints = mod:io_dofile("blessings_archive/scripts/mods/blessings_archive/blessings_archive_view_blueprints")
 
 BlessingsArchiveView = class("BlessingsArchiveView", "BaseView")
+
+local SeenTabChoice = {"all", "seen", "unseen"}
 
 BlessingsArchiveView.init = function(self, settings)
     self._settings = mod:io_dofile("blessings_archive/scripts/mods/blessings_archive/blessings_archive_view_settings")
@@ -44,6 +45,8 @@ BlessingsArchiveView.init = function(self, settings)
 
     self._opened_dropdown = nil
     self._close_opened_dropdown = false
+
+    self._selected_seen_tab = 2
 
     BlessingsArchiveView.super.init(self, definitions, settings)
 end
@@ -425,11 +428,11 @@ BlessingsArchiveView._setup_menu_tabs = function(self)
     }
 
     local tab_ids = {}
-    local tabs = { "All", "Owned", "Missing" }
 
-    for i = 1, 3 do
+    for i = 1, #SeenTabChoice do
+        local display_name = mod:localize(SeenTabChoice[i] .. "_traits")
         local pressed_callback = callback(self, "cb_switch_tab", i)
-        local tab_id = tab_menu_element:add_entry(tabs[i], pressed_callback, tab_button, nil, nil, true)
+        local tab_id = tab_menu_element:add_entry(display_name, pressed_callback, tab_button, nil, nil, true)
         tab_ids[i] = tab_id
     end
 
@@ -438,10 +441,17 @@ BlessingsArchiveView._setup_menu_tabs = function(self)
     self._tab_ids = tab_ids
 
     self:_update_tab_bar_position()
+    self._tab_menu_element:set_selected_index(2)
 end
 
-BlessingsArchiveView.cb_switch_tab = function(self, ...)
+BlessingsArchiveView.cb_switch_tab = function(self, index)
+    if index ~= self._tab_menu_element:selected_index() then
+        self._tab_menu_element:set_selected_index(index)
+        self._selected_seen_tab = index
 
+        self:_create_blessing_widgets()
+        self:_create_grid()
+    end
 end
 
 BlessingsArchiveView._update_tab_bar_position = function(self)
@@ -545,6 +555,14 @@ BlessingsArchiveView._create_blessing_widgets = function(self)
 
         if self._selected_weapon_category and self._selected_weapon_category ~= trait.weapon_restriction then
             goto continue
+        end
+
+        if self._selected_seen_tab ~= 1 then
+            if self._selected_seen_tab == 2 and not trait.is_seen then
+                goto continue
+            elseif self._selected_seen_tab == 3 and trait.is_seen then
+                goto continue
+            end
         end
 
         local widget = UIWidget.init("blessing_" .. i, definition)

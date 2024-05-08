@@ -74,6 +74,15 @@ return {
         ru = "Всего: %s",
         ["zh-cn"] = "总数： %s",
     },
+    all_traits = {
+        en = "All"
+    },
+    seen_traits = {
+        en = "Owned"
+    },
+    unseen_traits = {
+        en = "Missing"
+    },
     -- Trait categories.
     bespoke_lasgun_p2 = {
         en = "Helbore Lasgun",
