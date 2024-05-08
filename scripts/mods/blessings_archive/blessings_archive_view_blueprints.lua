@@ -212,6 +212,15 @@ local blueprints = {
             local total_height = title_height + description_height + weapons_height + total_offset + bottom_margin
 
             widget.content.size = {350, total_height}
+
+            if not trait.is_seen then
+                style.background_gradient.color = Color.ui_grey_medium(255, true)
+                style.frame.color = Color.ui_grey_medium(0, true)
+                style.corner.color = Color.ui_grey_medium(255, true)
+                style.title.text_color = Color.ui_grey_light(255, true)
+                style.description.text_color = Color.ui_grey_light(255, true)
+                style.weapons.text_color = Color.ui_grey_light(255, true)
+            end
         end
     },
 }
