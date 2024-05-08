@@ -2,6 +2,7 @@ local mod = get_mod("blessings_archive")
 local debug_mode = mod:get("debug_mode")
 
 local ColorUtilities = require("scripts/utilities/ui/colors")
+local TextUtilities = require("scripts/utilities/ui/text")
 local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 local UISoundEvents = require("scripts/settings/ui/ui_sound_events")
 local Promise = require("scripts/foundation/utilities/promise")
@@ -47,6 +48,7 @@ BlessingsArchiveView.init = function(self, settings)
     self._close_opened_dropdown = false
 
     self._selected_seen_tab = 2
+    self._owned_traits_count = 0
 
     BlessingsArchiveView.super.init(self, definitions, settings)
 end
@@ -221,6 +223,10 @@ BlessingsArchiveView._update_traits = function(self)
                 }
 
                 self._traits[#self._traits + 1] = trait_data
+
+                if is_seen then
+                    self._owned_traits_count = self._owned_traits_count + 1
+                end
 
                 :: continue ::
             end
@@ -516,7 +522,8 @@ BlessingsArchiveView.update = function(self, dt, t, input_service)
     end
 
     if self:has_widget("total_count") then
-        self._widgets_by_name.total_count.content.text = mod:localize("total_count", #self._traits)
+        local owned_count = TextUtilities.apply_color_to_text(self._owned_traits_count, Color.ui_terminal(255, true))
+        self._widgets_by_name.total_count.content.text = mod:localize("total_count", owned_count, #self._traits)
     end
 
     if self:has_widget("shown_count") then

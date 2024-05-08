@@ -70,18 +70,21 @@ return {
         ["zh-cn"] = "显示： %s",
     },
     total_count = {
-        en = "Total: %s",
-        ru = "Всего: %s",
-        ["zh-cn"] = "总数： %s",
+        en = "Total: %s/%s",
+        ru = "Всего: %s/%s",
+        ["zh-cn"] = "总数： %s/%s",
     },
     all_traits = {
-        en = "All"
+        en = "All",
+        ru = "Все"
     },
     seen_traits = {
-        en = "Owned"
+        en = "Owned",
+        ru = "Имеются"
     },
     unseen_traits = {
-        en = "Missing"
+        en = "Missing",
+        ru = "Отсутствуют"
     },
     -- Trait categories.
     bespoke_lasgun_p2 = {

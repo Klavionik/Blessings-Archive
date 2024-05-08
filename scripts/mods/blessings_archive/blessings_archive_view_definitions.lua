@@ -64,14 +64,14 @@ local scenegraph_definition = {
         parent = "seen_status_tabs",
         horizontal_alignment = "right",
         size = {500, 50},
-        position = {0, 70, 2}
+        position = {0, 65, 2}
     },
     rarity_filter = {
         vertical_alignment = "top",
         parent = "weapons_filter",
         horizontal_alignment = "right",
         size = {500, 50},
-        position = {0, 70, 2}
+        position = {0, 65, 2}
     },
     shown_count = {
         vertical_alignment = "top",
@@ -85,7 +85,7 @@ local scenegraph_definition = {
         parent = "shown_count",
         horizontal_alignment = "left",
         size = {200, 0},
-        position = {0, 40, 2}
+        position = {0, 35, 2}
     },
 }
 
@@ -147,7 +147,7 @@ local widget_definitions = {
             value_id = "text",
             style_id = "text",
             pass_type = "text",
-            value = mod:localize("total_count", 0),
+            value = mod:localize("total_count", 0, 0),
             style = table.clone(UIFontSettings.header_3)
         }
     }, "total_count"),
