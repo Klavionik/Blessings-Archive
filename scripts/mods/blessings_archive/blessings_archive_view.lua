@@ -1,14 +1,11 @@
 local mod = get_mod("blessings_archive")
 local debug_mode = mod:get("debug_mode")
 
-local ColorUtilities = require("scripts/utilities/ui/colors")
-local TextUtilities = require("scripts/utilities/ui/text")
-local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
-local UISoundEvents = require("scripts/settings/ui/ui_sound_events")
 local Promise = require("scripts/foundation/utilities/promise")
 local ItemUtils = require("scripts/utilities/items")
 local MasterItems = require("scripts/backend/master_items")
 local ScriptWorld = require("scripts/foundation/utilities/script_world")
+local TextUtilities = require("scripts/utilities/ui/text")
 local ViewElementInputLegend = require("scripts/ui/view_elements/view_element_input_legend/view_element_input_legend")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIRenderer = require("scripts/managers/ui/ui_renderer")
@@ -20,7 +17,7 @@ local blueprints = mod:io_dofile("blessings_archive/scripts/mods/blessings_archi
 
 BlessingsArchiveView = class("BlessingsArchiveView", "BaseView")
 
-local SeenTabChoice = {"all", "seen", "unseen"}
+local DEFAULT_SEEN_TAB = 2
 
 BlessingsArchiveView.init = function(self, settings)
     self._settings = mod:io_dofile("blessings_archive/scripts/mods/blessings_archive/blessings_archive_view_settings")
@@ -47,7 +44,7 @@ BlessingsArchiveView.init = function(self, settings)
     self._opened_dropdown = nil
     self._close_opened_dropdown = false
 
-    self._selected_seen_tab = 2
+    self._selected_seen_tab = DEFAULT_SEEN_TAB
     self._owned_traits_count = 0
 
     BlessingsArchiveView.super.init(self, definitions, settings)
@@ -279,176 +276,20 @@ BlessingsArchiveView._setup_menu_tabs = function(self)
     local input_action_left = "navigate_primary_left_pressed"
     local input_action_right = "navigate_primary_right_pressed"
 
-    --tab_menu_element:set_input_actions(input_action_left, input_action_right)
+    tab_menu_element:set_input_actions(input_action_left, input_action_right)
 
-    local tab_menu_button_hotspot_content = {
-        on_hover_sound = UISoundEvents.tab_secondary_button_hovered,
-        on_pressed_sound = UISoundEvents.tab_secondary_button_pressed
-    }
+    local tabs = {"tab_all", "tab_seen", "tab_unseen"}
 
-    local function terminal_button_change_function(content, style, optional_hotspot_id)
-        local hotspot = optional_hotspot_id and content[optional_hotspot_id] or content.hotspot
-        local is_selected = hotspot.is_selected
-        local is_focused = hotspot.is_focused
-        local is_hover = hotspot.is_hover
-        local disabled = hotspot.disabled
-        local default_color = style.default_color
-        local hover_color = style.hover_color
-        local selected_color = style.selected_color
-        local disabled_color = style.disabled_color
-        local color = nil
-
-        if disabled and disabled_color then
-            color = disabled_color
-        elseif (is_selected or is_focused) and selected_color then
-            color = selected_color
-        elseif is_hover and hover_color then
-            color = hover_color
-        elseif default_color then
-            color = default_color
-        end
-        --
-        if color then
-            ColorUtilities.color_copy(color, style.text_color or style.color)
-        end
-    end
-
-    local function terminal_button_hover_change_function(content, style, optional_hotspot_id)
-        local hotspot = optional_hotspot_id and content[optional_hotspot_id] or content.hotspot
-        local anim_hover_progress = hotspot.anim_hover_progress or 0
-        local anim_select_progress = hotspot.anim_select_progress or 0
-        local anim_focus_progress = hotspot.anim_focus_progres or 0
-        local default_alpha = 155
-        local hover_alpha = anim_hover_progress * 100
-        local select_alpha = math.max(anim_select_progress, anim_focus_progress) * 50
-        local style_color = style.text_color or style.color
-        style_color[1] = math.clamp(default_alpha + select_alpha + hover_alpha, 0, 255)
-    end
-
-    local simple_button_font_settings = UIFontSettings.button_medium
-
-    local tab_button = {
-        {
-            style_id = "hotspot",
-            pass_type = "hotspot",
-            content_id = "hotspot",
-            content = tab_menu_button_hotspot_content,
-            style = {
-                on_hover_sound = UISoundEvents.tab_secondary_button_hovered,
-                on_pressed_sound = UISoundEvents.tab_secondary_button_pressed
-            }
-        },
-        {
-            pass_type = "texture",
-            style_id = "background",
-            value = "content/ui/materials/backgrounds/default_square",
-            style = {
-                default_color = Color.terminal_background(nil, true),
-                selected_color = Color.terminal_background_selected(nil, true)
-            },
-            change_function = terminal_button_change_function
-        },
-        {
-            pass_type = "texture",
-            style_id = "background_gradient",
-            value = "content/ui/materials/gradients/gradient_vertical",
-            style = {
-                vertical_alignment = "center",
-                horizontal_alignment = "center",
-                default_color = Color.terminal_background_gradient(nil, true),
-                selected_color = Color.terminal_frame_selected(nil, true),
-                offset = {
-                    0,
-                    0,
-                    1
-                }
-            },
-            change_function = function (content, style)
-                terminal_button_change_function(content, style)
-                terminal_button_hover_change_function(content, style)
-            end
-        },
-        {
-            pass_type = "texture",
-            style_id = "frame",
-            value = "content/ui/materials/frames/frame_tile_2px",
-            style = {
-                vertical_alignment = "center",
-                horizontal_alignment = "center",
-                color = Color.terminal_frame(nil, true),
-                default_color = Color.terminal_frame(nil, true),
-                selected_color = Color.terminal_frame_selected(nil, true),
-                hover_color = Color.terminal_frame_hover(nil, true),
-                offset = {
-                    0,
-                    0,
-                    12
-                }
-            },
-            change_function = terminal_button_change_function
-        },
-        {
-            pass_type = "texture",
-            style_id = "corner",
-            value = "content/ui/materials/frames/frame_corner_2px",
-            style = {
-                vertical_alignment = "center",
-                horizontal_alignment = "center",
-                color = Color.terminal_corner(nil, true),
-                default_color = Color.terminal_corner(nil, true),
-                selected_color = Color.terminal_corner_selected(nil, true),
-                hover_color = Color.terminal_corner_hover(nil, true),
-                offset = {
-                    0,
-                    0,
-                    13
-                }
-            },
-            change_function = terminal_button_change_function
-        },
-        {
-            style_id = "text",
-            pass_type = "text",
-            value_id = "text",
-            style = {
-                text_vertical_alignment = "center",
-                text_horizontal_alignment = "center",
-                offset = {
-                    0,
-                    0,
-                    2
-                },
-                font_type = simple_button_font_settings.font_type,
-                font_size = 22,
-                text_color = simple_button_font_settings.text_color,
-                default_text_color = simple_button_font_settings.text_color
-            },
-            change_function = function (content, style)
-                local default_text_color = style.default_text_color
-                local text_color = style.text_color
-                local progress = 1 - content.hotspot.anim_input_progress * 0.3
-                text_color[2] = default_text_color[2] * progress
-                text_color[3] = default_text_color[3] * progress
-                text_color[4] = default_text_color[4] * progress
-            end
-        },
-    }
-
-    local tab_ids = {}
-
-    for i = 1, #SeenTabChoice do
-        local display_name = mod:localize(SeenTabChoice[i] .. "_traits")
+    for i = 1, #tabs do
+        local display_name = mod:localize(tabs[i])
         local pressed_callback = callback(self, "cb_switch_tab", i)
-        local tab_id = tab_menu_element:add_entry(display_name, pressed_callback, tab_button, nil, nil, true)
-        tab_ids[i] = tab_id
+        tab_menu_element:add_entry(display_name, pressed_callback, blueprints.tab_button, nil, nil, true)
     end
 
     tab_menu_element:set_is_handling_navigation_input(true)
 
-    self._tab_ids = tab_ids
-
     self:_update_tab_bar_position()
-    self._tab_menu_element:set_selected_index(2)
+    self._tab_menu_element:set_selected_index(DEFAULT_SEEN_TAB)
 end
 
 BlessingsArchiveView.cb_switch_tab = function(self, index)

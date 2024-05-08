@@ -74,15 +74,15 @@ return {
         ru = "Всего: %s/%s",
         ["zh-cn"] = "总数： %s/%s",
     },
-    all_traits = {
+    tab_all = {
         en = "All",
         ru = "Все"
     },
-    seen_traits = {
+    tab_seen = {
         en = "Owned",
         ru = "Имеются"
     },
-    unseen_traits = {
+    tab_unseen = {
         en = "Missing",
         ru = "Отсутствуют"
     },
