@@ -412,7 +412,7 @@ BlessingsArchiveView._setup_menu_tabs = function(self)
                     2
                 },
                 font_type = simple_button_font_settings.font_type,
-                font_size = simple_button_font_settings.font_size,
+                font_size = 22,
                 text_color = simple_button_font_settings.text_color,
                 default_text_color = simple_button_font_settings.text_color
             },

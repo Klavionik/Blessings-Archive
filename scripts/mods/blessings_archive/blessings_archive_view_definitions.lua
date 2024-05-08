@@ -52,25 +52,25 @@ local scenegraph_definition = {
         size = {500, 50},
         position = {0, -35, 1}
     },
-    filters_title_text = {
+    seen_status_tabs = {
         vertical_alignment = "top",
         parent = "scrollbar",
         horizontal_alignment = "left",
-        size = {400, 50},
+        size = {500, 50},
         position = {40, 0, 2}
     },
     weapons_filter = {
         vertical_alignment = "top",
-        parent = "filters_title_text",
+        parent = "seen_status_tabs",
         horizontal_alignment = "right",
-        size = {400, 50},
-        position = {0, 60, 2}
+        size = {500, 50},
+        position = {0, 70, 2}
     },
     rarity_filter = {
         vertical_alignment = "top",
         parent = "weapons_filter",
         horizontal_alignment = "right",
-        size = {400, 50},
+        size = {500, 50},
         position = {0, 70, 2}
     },
     shown_count = {
@@ -87,13 +87,6 @@ local scenegraph_definition = {
         size = {200, 0},
         position = {0, 40, 2}
     },
-    seen_status_tabs = {
-        vertical_alignment = "top",
-        parent = "total_count",
-        horizontal_alignment = "left",
-        size = {500, 0},
-        position = {0, 40, 2}
-    }
 }
 
 local widget_definitions = {
@@ -140,15 +133,6 @@ local widget_definitions = {
         }
     }, "grid_mask"),
     scrollbar = UIWidget.create_definition(ScrollbarPassTemplates.default_scrollbar, "scrollbar"),
-    filters_title_text = UIWidget.create_definition({
-        {
-            value_id = "text",
-            style_id = "text",
-            pass_type = "text",
-            value = mod:localize("filters_title"),
-            style = table.clone(UIFontSettings.header_2)
-        }
-    }, "filters_title_text"),
     shown_count = UIWidget.create_definition({
         {
             value_id = "text",
