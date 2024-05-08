@@ -45,7 +45,8 @@ BlessingsArchiveView.init = function(self, settings)
     self._close_opened_dropdown = false
 
     self._selected_seen_tab = DEFAULT_SEEN_TAB
-    self._owned_traits_count = 0
+    self._total_owned_traits_count = 0
+    self._selected_owned_traits_count = 0
 
     BlessingsArchiveView.super.init(self, definitions, settings)
 end
@@ -223,7 +224,7 @@ BlessingsArchiveView._update_traits = function(self)
                 self._traits[#self._traits + 1] = trait_data
 
                 if is_seen then
-                    self._owned_traits_count = self._owned_traits_count + 1
+                    self._total_owned_traits_count = self._total_owned_traits_count + 1
                 end
 
                 :: continue ::
@@ -365,12 +366,13 @@ BlessingsArchiveView.update = function(self, dt, t, input_service)
     end
 
     if self:has_widget("total_count") then
-        local owned_count = TextUtilities.apply_color_to_text(self._owned_traits_count, Color.ui_terminal(255, true))
+        local owned_count = TextUtilities.apply_color_to_text(self._total_owned_traits_count, Color.ui_terminal(255, true))
         self._widgets_by_name.total_count.content.text = mod:localize("total_count", owned_count, #self._traits)
     end
 
     if self:has_widget("shown_count") then
-        self._widgets_by_name.shown_count.content.text = mod:localize("shown_count", #self._blessing_widgets)
+        local owned_count = TextUtilities.apply_color_to_text(self._selected_owned_traits_count, Color.ui_terminal(255, true))
+        self._widgets_by_name.shown_count.content.text = mod:localize("shown_count", owned_count, #self._blessing_widgets)
     end
 
     self:_handle_input(input_service, dt, t)
@@ -405,6 +407,7 @@ BlessingsArchiveView._find_max_card_height = function(self)
 end
 
 BlessingsArchiveView._create_blessing_widgets = function(self)
+    self._selected_owned_traits_count = 0
     local widgets = {}
 
     for i = 1, #self._traits do
@@ -429,6 +432,10 @@ BlessingsArchiveView._create_blessing_widgets = function(self)
         local widget = UIWidget.init("blessing_" .. i, self._blessing_definition)
         blueprints.blessing.init(self._offscreen_ui_renderer, widget, trait)
         widget.content.size[2] = self._max_blessing_height
+
+        if trait.is_seen then
+            self._selected_owned_traits_count = self._selected_owned_traits_count + 1
+        end
 
         widgets[#widgets + 1] = widget
 

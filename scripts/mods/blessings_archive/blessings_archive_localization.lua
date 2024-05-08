@@ -65,9 +65,9 @@ return {
         ["zh-cn"] = "筛选",
     },
     shown_count = {
-        en = "Shown: %s",
-        ru = "Показано: %s",
-        ["zh-cn"] = "显示： %s",
+        en = "Shown: %s/%s",
+        ru = "Показано: %s/%s",
+        ["zh-cn"] = "显示： %/s%s",
     },
     total_count = {
         en = "Total: %s/%s",

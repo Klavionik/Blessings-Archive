@@ -138,7 +138,7 @@ local widget_definitions = {
             value_id = "text",
             style_id = "text",
             pass_type = "text",
-            value = mod:localize("shown_count", 0),
+            value = mod:localize("shown_count", 0, 0),
             style = table.clone(UIFontSettings.header_3)
         }
     }, "shown_count"),
