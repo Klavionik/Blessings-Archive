@@ -65,14 +65,26 @@ return {
         ["zh-cn"] = "筛选",
     },
     shown_count = {
-        en = "Shown: %s",
-        ru = "Показано: %s",
-        ["zh-cn"] = "显示： %s",
+        en = "Shown: %s/%s",
+        ru = "Показано: %s/%s",
+        ["zh-cn"] = "显示： %/s%s",
     },
     total_count = {
-        en = "Total: %s",
-        ru = "Всего: %s",
-        ["zh-cn"] = "总数： %s",
+        en = "Total: %s/%s",
+        ru = "Всего: %s/%s",
+        ["zh-cn"] = "总数： %s/%s",
+    },
+    tab_all = {
+        en = "All",
+        ru = "Все"
+    },
+    tab_seen = {
+        en = "Owned",
+        ru = "Имеются"
+    },
+    tab_unseen = {
+        en = "Missing",
+        ru = "Отсутствуют"
     },
     -- Trait categories.
     bespoke_lasgun_p2 = {
