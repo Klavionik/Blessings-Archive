@@ -67,7 +67,7 @@ return {
     shown_count = {
         en = "Shown: %s/%s",
         ru = "Показано: %s/%s",
-        ["zh-cn"] = "显示： %/s%s",
+        ["zh-cn"] = "显示： %s/%s",
     },
     total_count = {
         en = "Total: %s/%s",
