@@ -77,14 +77,14 @@ local scenegraph_definition = {
         vertical_alignment = "top",
         parent = "rarity_filter",
         horizontal_alignment = "left",
-        size = {200, 0},
+        size = {230, 0},
         position = {0, 80, 2}
     },
     total_count = {
         vertical_alignment = "top",
         parent = "shown_count",
         horizontal_alignment = "left",
-        size = {200, 0},
+        size = {230, 0},
         position = {0, 35, 2}
     },
 }
