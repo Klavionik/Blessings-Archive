@@ -294,5 +294,21 @@ return {
         en = "Power Sword",
         ru = "Силовой меч",
         ["zh-cn"] = "动力剑",
-    }
+    },
+    bespoke_boltpistol_p1 = {
+        en = "Pattern Bolt Pistol",
+        ru = "Болт-пистолет",
+    },
+    bespoke_ogryn_pickaxe_p1 = {
+        en = "Pickaxe",
+        ru = "Кирка",
+    },
+    bespoke_powermaul_p1 = {
+        en = "Shock Maul",
+        ru = "Шоковая булава",
+    },
+    bespoke_shotgun_p2 = {
+        en = "Assault Shotgun",
+        ru = "Боевой дробовик",
+    },
 }
