@@ -296,19 +296,23 @@ return {
         ["zh-cn"] = "动力剑",
     },
     bespoke_boltpistol_p1 = {
-        en = "Pattern Bolt Pistol",
+        en = "Bolt Pistol",
         ru = "Болт-пистолет",
+        ["zh-cn"] = "爆矢手枪",
     },
     bespoke_ogryn_pickaxe_p1 = {
         en = "Pickaxe",
         ru = "Кирка",
+        ["zh-cn"] = "镐",
     },
     bespoke_powermaul_p1 = {
         en = "Shock Maul",
         ru = "Шоковая булава",
+        ["zh-cn"] = "震击锤",
     },
     bespoke_shotgun_p2 = {
         en = "Assault Shotgun",
         ru = "Боевой дробовик",
+        ["zh-cn"] = "突击霰弹枪",
     },
 }
